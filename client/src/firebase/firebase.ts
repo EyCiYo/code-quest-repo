@@ -16,8 +16,6 @@ const firebaseConfig = {
 const app = !getApps.length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 
-const firestore = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true
-})
+const firestore = getFirestore(app);
 
 export { auth,firestore,app };
