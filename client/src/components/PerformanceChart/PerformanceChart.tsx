@@ -7,39 +7,11 @@ const data = [
         score: 40,
     },
     {
-        name: "Two-Pointer",
-        score: 50,
-    },
-    {
         name: "Dynamic Programming",
         score: 60,
     },
     {
-        name: "Linked List",
-        score: 70,
-    },
-    {
-        name: "Stack",
-        score: 80,
-    },
-    {
-        name: "Queue",
-        score: 90,
-    },
-    {
         name: "Hash Table",
-        score: 40,
-    },
-    {
-        name: "Binary Search",
-        score: 20,
-    },
-    {
-        name: "Tree",
-        score: 10,
-    },
-    {
-        name: "Graph",
         score: 40,
     },
     {
@@ -47,8 +19,24 @@ const data = [
         score: 90,
     },
     {
-        name: "Bit Manipulation",
-        score: 40,
+        name:"Math",
+        score: 50,
+    },
+    {
+        name: "Sorting",
+        score: 60,
+    },
+    {
+        name:"DFS",
+        score: 20,
+    },
+    {
+        name: "BFS",
+        score: 30,
+    },
+    {
+        name: "Binary Search",
+        score: 50,
     }
 ];
 

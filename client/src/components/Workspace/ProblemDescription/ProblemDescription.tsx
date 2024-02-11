@@ -1,10 +1,13 @@
+import { DBProblem } from "@/utils/types";
 import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { BsCheck2Circle } from "react-icons/bs";
 import { TiStarOutline } from "react-icons/ti";
 
-type ProblemDescriptionProps = {};
+type ProblemDescriptionProps = {
+    questiondata: DBProblem | null;
+};
 
-const ProblemDescription: React.FC<ProblemDescriptionProps> = () => {
+const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) => {
     return (
         <div className="bg-dark-layer-1">
             {/* TAB */}
@@ -24,14 +27,16 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = () => {
                     <div className="w-full">
                         <div className="flex space-x-4">
                             <div className="flex-1 mr-2 text-lg text-white font-medium">
-                                1. Two Sum
+                                {/* 1. Two Sum */}
+                                {questiondata?.title}
                             </div>
                         </div>
                         <div className="flex items-center mt-3">
                             <div
                                 className={`text-olive bg-olive inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize `}
                             >
-                                Easy
+                                {/* Easy */}
+                                {questiondata?.difficulty}
                             </div>
                             <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
                                 <BsCheck2Circle />
@@ -50,8 +55,8 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = () => {
                         </div>
 
                         {/* Problem Statement(paragraphs) */}
-                        <div className="text-white text-sm">
-                            <p className="mt-3">
+                        <div className="text-white text-sm" dangerouslySetInnerHTML={{__html:questiondata?.text as string}}>
+                            {/* <p className="mt-3">
                                 Given an array of integers <code>nums</code> and
                                 an integer <code>target</code>, return
                                 <em>
@@ -67,7 +72,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = () => {
                             </p>
                             <p className="mt-3">
                                 You can return the answer in any order.
-                            </p>
+                            </p> */}
                         </div>
 
                         {/* Examples */}
@@ -132,11 +137,10 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = () => {
                             <div className="text-white text-sm font-medium">
                                 Constraints:
                             </div>
-                            <ul className="text-white ml-5 list-disc">
-                                <li className="mt-2">
+                            <ul className="text-white ml-5 list-disc" dangerouslySetInnerHTML={{__html:questiondata?.constriants as string}}>
+                                {/* <li className="mt-2">
                                     <code>2 ≤ nums.length ≤ 10</code>
                                 </li>
-
                                 <li className="mt-2">
                                     <code>-10 ≤ nums[i] ≤ 10</code>
                                 </li>
@@ -147,7 +151,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = () => {
                                     <strong>
                                         Only one valid answer exists.
                                     </strong>
-                                </li>
+                                </li> */}
                             </ul>
                         </div>
                     </div>

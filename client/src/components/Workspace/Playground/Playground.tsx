@@ -3,24 +3,19 @@ import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
 import CodeMirror from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
-import { cpp } from "@codemirror/lang-cpp";
+import { python } from "@codemirror/lang-python";
+import {cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
+import { DBProblem } from "@/utils/types";
 
-type PlaygroundProps = {};
+type PlaygroundProps = {
+  questiondata: DBProblem | null;
+};
 
-const Playground: React.FC<PlaygroundProps> = () => {
-  const boilerPlate = `void add(int a, int b) {}
-  `;
-  const driver = `int main() {
-      add(2, 3);
-      add(5, 6);
-      add(-3, 10);
-      return 1;
-  }
-  `;
-  const header = `#include <iostream>
-  using namespace std;
-      `;
+const Playground: React.FC<PlaygroundProps> = ({questiondata}) => {
+  const boilerPlate = atob(questiondata?.boilerplate_py as string);
+  const driver = atob(questiondata?.driver_py as string);
+  const header = "";
   const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
 
   const handleRunButtonClick = async () => {
@@ -33,7 +28,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
 
       const data = {
         source_code: encodedCode,
-        language_id: 54,
+        language_id: 35,
         base64_encoded: true,
         stdin: null,
       };
@@ -92,7 +87,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
           <CodeMirror
             value={sourceCode}
             theme={vscodeDark}
-            extensions={[cpp()]}
+            extensions={[python()]}
             style={{ fontSize: 16 }}
             onChange={(value) => {
               setSourceCode(value as string);
