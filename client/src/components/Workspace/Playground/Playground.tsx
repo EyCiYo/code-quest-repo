@@ -22,15 +22,15 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata}) => {
     // Perform actions with sourceCode, e.g., send API request
     try {
       const url =
-        "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true";
+        "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&fields=*";
       const code = header + sourceCode + driver;
+      console.log(code);
       const encodedCode = btoa(code);
 
       const data = {
         source_code: encodedCode,
         language_id: 35,
         base64_encoded: true,
-        stdin: null,
       };
 
       const options = {

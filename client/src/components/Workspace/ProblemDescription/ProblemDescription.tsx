@@ -137,7 +137,8 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
                             <div className="text-white text-sm font-medium">
                                 Constraints:
                             </div>
-                            <ul className="text-white ml-5 list-disc" dangerouslySetInnerHTML={{__html:questiondata?.constriants as string}}>
+                            <ul className="text-white ml-5 list-disc" >
+                                <div dangerouslySetInnerHTML={{__html:questiondata?.constraints as string}}></div>
                                 {/* <li className="mt-2">
                                     <code>2 ≤ nums.length ≤ 10</code>
                                 </li>

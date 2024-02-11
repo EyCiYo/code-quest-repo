@@ -10,5 +10,5 @@ export type DBProblem = {
     boilerplate_py: string;
     driver_py: string;
     examples:string;
-    constriants:string;
+    constraints:string;
 };

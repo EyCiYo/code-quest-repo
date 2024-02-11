@@ -7,7 +7,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { firestore } from "@/firebase/firebase";
 
 export default function App({ Component, pageProps }: AppProps) {
-    console.log(firestore.app);
     return (
         <RecoilRoot>
             <Head>
