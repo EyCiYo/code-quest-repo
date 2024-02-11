@@ -40,8 +40,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
         headers: {
           "content-type": "application/json",
           "Content-Type": "application/json",
-          "X-RapidAPI-Key":
-            "8934217676msh2bd9a679b7e581cp1721f4jsnaea969da37df",
+          "X-RapidAPI-Key": String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
           "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
         },
         body: JSON.stringify(data),
@@ -59,8 +58,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
         headers: {
           "content-type": "application/json",
           "Content-Type": "application/json",
-          "X-RapidAPI-Key":
-            "8934217676msh2bd9a679b7e581cp1721f4jsnaea969da37df",
+          "X-RapidAPI-Key": String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
           "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
         },
       });
