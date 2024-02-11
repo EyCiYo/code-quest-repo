@@ -9,17 +9,16 @@ import EditorFooter from "./EditorFooter";
 type PlaygroundProps = {};
 
 const Playground: React.FC<PlaygroundProps> = () => {
-  const [sourceCode, setSourceCode] = useState<string>("");
-
   const boilerPlate = `function twoSum() {
     for (let i = 0; i < nums.length; i++) {
-        let complement = target - nums[i];
-        if (nums.includes(complement)) {
-            return [i, nums.indexOf(complement)];
-        }
+      let complement = target - nums[i];
+      if (nums.includes(complement)) {
+        return [i, nums.indexOf(complement)];
+      }
     }
-}
-`;
+  }
+  `;
+  const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
 
   const handleRunButtonClick = async () => {
     // Perform actions with sourceCode, e.g., send API request
@@ -41,8 +40,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
         headers: {
           "content-type": "application/json",
           "Content-Type": "application/json",
-          "X-RapidAPI-Key":
-            "8934217676msh2bd9a679b7e581cp1721f4jsnaea969da37df",
+          "X-RapidAPI-Key": String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
           "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
         },
         body: JSON.stringify(data),
@@ -60,8 +58,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
         headers: {
           "content-type": "application/json",
           "Content-Type": "application/json",
-          "X-RapidAPI-Key":
-            "8934217676msh2bd9a679b7e581cp1721f4jsnaea969da37df",
+          "X-RapidAPI-Key": String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
           "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
         },
       });
@@ -86,7 +83,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
       >
         <div className="w-full overflow-auto">
           <CodeMirror
-            value={boilerPlate}
+            value={sourceCode}
             theme={vscodeDark}
             extensions={[javascript()]}
             style={{ fontSize: 16 }}
@@ -108,11 +105,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
 
           {/* case 1*/}
           <div className="flex">
-            <div
-              className="mr-2 items-start mt-2 "
-              //key={example.id}
-              //onClick={() => setActiveTestCaseId(index)}
-            >
+            <div className="mr-2 items-start mt-2 ">
               <div className="flex flex-wrap items-center gap-y-4">
                 <div
                   className={`font-medium items-center transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap
