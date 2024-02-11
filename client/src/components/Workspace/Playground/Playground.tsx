@@ -3,36 +3,39 @@ import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
 import CodeMirror from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
-import { javascript } from "@codemirror/lang-javascript";
+import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 
 type PlaygroundProps = {};
 
 const Playground: React.FC<PlaygroundProps> = () => {
-  const boilerPlate = `function twoSum() {
-    for (let i = 0; i < nums.length; i++) {
-      let complement = target - nums[i];
-      if (nums.includes(complement)) {
-        return [i, nums.indexOf(complement)];
-      }
-    }
+  const boilerPlate = `void add(int a, int b) {}
+  `;
+  const driver = `int main() {
+      add(2, 3);
+      add(5, 6);
+      add(-3, 10);
+      return 1;
   }
   `;
+  const header = `#include <iostream>
+  using namespace std;
+      `;
   const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
 
   const handleRunButtonClick = async () => {
     // Perform actions with sourceCode, e.g., send API request
     try {
       const url =
-        "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&fields=*";
-      const code = sourceCode;
+        "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true";
+      const code = header + sourceCode + driver;
       const encodedCode = btoa(code);
 
       const data = {
         source_code: encodedCode,
         language_id: 54,
         base64_encoded: true,
-        stdin: "NQ0KMjMNCjQ1DQoxMg0KOQ0KOA==",
+        stdin: null,
       };
 
       const options = {
@@ -52,7 +55,10 @@ const Playground: React.FC<PlaygroundProps> = () => {
       const submissionToken = responseData.token;
       console.log(submissionToken);
 
-      const statusURL = `https://judge0-ce.p.rapidapi.com/submissions/${submissionToken}?base64_encoded=true&fields=*`;
+      const statusURL =
+        "https://judge0-ce.p.rapidapi.com/submissions/" +
+        submissionToken +
+        "?base64_encoded=true&fields=stdout,stderr,status_id,language_id";
       const statusResponse = await fetch(statusURL, {
         method: "GET",
         headers: {
@@ -66,6 +72,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
       const statusData = await statusResponse.json();
       const result = atob(statusData.stdout);
       console.log(statusData);
+      console.log(typeof result);
       alert(result);
     } catch (error) {
       console.error(error);
@@ -85,7 +92,7 @@ const Playground: React.FC<PlaygroundProps> = () => {
           <CodeMirror
             value={sourceCode}
             theme={vscodeDark}
-            extensions={[javascript()]}
+            extensions={[cpp()]}
             style={{ fontSize: 16 }}
             onChange={(value) => {
               setSourceCode(value as string);
