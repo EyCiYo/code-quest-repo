@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import { python } from "@codemirror/lang-python";
 import {cpp } from "@codemirror/lang-cpp";
@@ -29,7 +29,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata}) => {
 
       const data = {
         source_code: encodedCode,
-        language_id: 35,
+        language_id: 71,
         base64_encoded: true,
       };
 
@@ -67,8 +67,17 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata}) => {
       const statusData = await statusResponse.json();
       const result = atob(statusData.stdout);
       console.log(statusData);
-      console.log(typeof result);
-      alert(result);
+      const resultArray = result.split("-");
+      const passArray = resultArray.filter((testCase) => testCase === "1" || testCase === "0");
+      var strRes:string= "";
+      passArray.forEach((testCase, index) => {
+        if (testCase === "1") {
+          strRes += `Test case ${index + 1} passed`+ "\n";
+        } else {
+          strRes += `Test case ${index + 1} failed`+ "\n";
+        }
+      });
+      alert(strRes);
     } catch (error) {
       console.error(error);
     }
@@ -80,14 +89,15 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata}) => {
       <Split
         className="h-[calc(100vh-94px)]"
         direction="vertical"
-        sizes={[60, 40]}
-        minSize={60}
+        sizes={[100, 0]}
+        minSize={100}
       >
-        <div className="w-full overflow-auto">
+        <div className="w-full overflow-x-hidden">
           <CodeMirror
             value={sourceCode}
             theme={vscodeDark}
-            extensions={[python()]}
+            extensions={[python(),EditorView.lineWrapping]}
+            
             style={{ fontSize: 16 }}
             onChange={(value) => {
               setSourceCode(value as string);

@@ -25,8 +25,8 @@ export const problems: Problem[] = [
 		videoId: "",
 	},
 	{
-		id: "longest-pallindromic-substring",
-		title: "Longest Pallindromic Substring",
+		id: "longest-palindromic-substring",
+		title: "Longest Palindromic Substring",
 		difficulty: "Medium",
 		category: "String, Dynamic Programming",
 		order: 3,

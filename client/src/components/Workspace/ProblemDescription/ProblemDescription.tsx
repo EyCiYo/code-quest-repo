@@ -8,6 +8,11 @@ type ProblemDescriptionProps = {
 };
 
 const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) => {
+
+    function createMarkup(c:string) {
+        return {__html: c};
+    }
+
     return (
         <div className="bg-dark-layer-1">
             {/* TAB */}
@@ -55,7 +60,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
                         </div>
 
                         {/* Problem Statement(paragraphs) */}
-                        <div className="text-white text-sm" dangerouslySetInnerHTML={{__html:questiondata?.text as string}}>
+                        <div className="text-white text-sm" >
                             {/* <p className="mt-3">
                                 Given an array of integers <code>nums</code> and
                                 an integer <code>target</code>, return
@@ -73,6 +78,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
                             <p className="mt-3">
                                 You can return the answer in any order.
                             </p> */}
+                            <div dangerouslySetInnerHTML={createMarkup(questiondata?.text as string)}/> 
                         </div>
 
                         {/* Examples */}
