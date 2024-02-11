@@ -7,11 +7,11 @@ import Feedback from "./Feedback/Feedback";
 type WorkspaceProps = {};
 
 const Workspace: React.FC<WorkspaceProps> = () => {
-    return (
-        <Split className="split" minSize={0}>
-            <Feedback />
-            <Playground />
-        </Split>
-    );
+  return (
+    <Split className="split" minSize={0}>
+      <ProblemDescription />
+      <Playground />
+    </Split>
+  );
 };
 export default Workspace;
