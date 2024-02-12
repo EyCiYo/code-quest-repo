@@ -2,6 +2,7 @@ import { problems } from "@/questions/problems";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { BsCheckCircle } from "react-icons/bs";
+import { FaFlagCheckered } from "react-icons/fa";
 import { AiFillYoutube } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 import YouTube from "react-youtube";
@@ -45,7 +46,7 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
                             key={doc.id}
                         >
                             <th className="px-2 py-4 font-medium text-dark-green-s whitespace-nowrap">
-                                <BsCheckCircle fontSize={"18"} width="18" />
+                                <FaFlagCheckered fontSize={"18"} width="18" />
                             </th>
                             <td className="px-6 py-4">
                                 <Link
