@@ -2,6 +2,7 @@ import { DBProblem } from "@/utils/types";
 import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { BsCheck2Circle } from "react-icons/bs";
 import { TiStarOutline } from "react-icons/ti";
+import { FaFlagCheckered } from "react-icons/fa";
 
 type ProblemDescriptionProps = {
     questiondata: DBProblem | null;
@@ -44,9 +45,9 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
                                 {questiondata?.difficulty}
                             </div>
                             <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
-                                <BsCheck2Circle />
+                                <FaFlagCheckered />
                             </div>
-                            <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6">
+                            {/* <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6">
                                 <AiFillLike />
                                 <span className="text-xs">120</span>
                             </div>
@@ -56,7 +57,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
                             </div>
                             <div className="cursor-pointer hover:bg-dark-fill-3  rounded p-[3px]  ml-4 text-xl transition-colors duration-200 text-green-s text-dark-gray-6 ">
                                 <TiStarOutline />
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Problem Statement(paragraphs) */}

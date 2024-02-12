@@ -14,7 +14,7 @@ export const problems: Problem[] = [
 		difficulty: "Easy",
 		category: "Array, Hash Table",
 		order: 1,
-		videoId: "8-k1C6ehKuw",
+		videoId: "",
 	},
 	{
 		id: "integer-to-roman",
@@ -38,6 +38,6 @@ export const problems: Problem[] = [
 		difficulty: "Easy",
 		category: "Array, Binary Search",
 		order: 4,
-		videoId: "xty7fr-k0TU",
+		videoId: "",
 	}
 ];
