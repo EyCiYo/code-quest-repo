@@ -7,6 +7,7 @@ import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
+import https, { RequestOptions } from 'https';
 import OpenAi from "openai";
 
 type PlaygroundProps = {
@@ -89,63 +90,60 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
 
   const handleSubmitButtonClick = async () => {
     console.log("Submit button clicked");
-    /*
-    const openai = new OpenAi({
-      baseURL: "https://api.deepseek.com/v1",
-      apiKey: String(process.env.NEXT__PUBLIC_DEEPSEEK_API_KEY),
-      dangerouslyAllowBrowser: true,
-    });
-    const completion = await openai.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are here to score me on my coding knowledge. Readthe code i submit and provide a score out of 10. I only need the score, no other text should be in the output",
-        },
-        {
-          role: "user",
-          content:
-            "#include <vector> std::vector<int> twoSum(const std::vector<int>& nums, int target) { std::vector<int> result; for (size_t i = 0; i < nums.size(); ++i) { for (size_t j = i + 1; j < nums.size(); ++j) { if (nums[i] + nums[j] == target) { result.push_back(static_cast<int>(i)); result.push_back(static_cast<int>(j)); return result; } } } return result; }",
-        },
-      ],
-      model: "deepseek-coder",
-    });
+    const options: RequestOptions = {
+      'method': 'POST',
+      'hostname': 'api.deepseek.com',
+      'path': '/v1/chat/completions',
+      'headers': {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY)
+      },
+    };
 
-    console.log(completion.choices[0]);*/
-    /*const fetch = require("node-fetch");
+    const req = https.request(options, (res) => {
+      let chunks: Buffer[] = [];
 
-    const API_KEY = String(process.env.NEXT__PUBLIC_DEEPSEEK_API_KEY);
-    const BASE_URL = "https://api.deepseek.com/v1";
-
-    async function getResponse() {
-      const body = JSON.stringify({
-        model: "deepseek-coder",
-        messages: [
-          { role: "system", content: "You are a helpful assistant" },
-          { role: "user", content: "Hello" },
-        ],
+      res.on("data", (chunk: Buffer) => {
+        chunks.push(chunk);
       });
 
-      const response = await fetch(`${BASE_URL}/chat/completions/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-        },
-        body,
+      res.on("end", () => {
+        let body = Buffer.concat(chunks);
+        let content = JSON.parse(body.toString())
+        console.log(content.choices[0].message.content);
       });
 
-      const data = await response.json();
-      return data.choices[0].message.content;
-    }
-
-    getResponse()
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((error) => {
+      res.on("error", (error) => {
         console.error(error);
-      });*/
+      });
+    });
+
+    let postData = JSON.stringify({
+      "messages": [
+        {
+          "content": "Evaluuate this code and provide tips to improve the code. Also give a score out of 10 ",
+          "role": "system"
+        },
+        {
+          "content": "#include <vector> std::vector<int> twoSum(const std::vector<int>& nums, int target) { std::vector<int> result; for (size_t i = 0; i < nums.size(); ++i) { for (size_t j = i + 1; j < nums.size(); ++j) { if (nums[i] + nums[j] == target) { result.push_back(static_cast<int>(i)); result.push_back(static_cast<int>(j)); return result; } } } return result; }",
+          "role": "user"
+        }
+      ],
+      "model": "deepseek-chat",
+      "frequency_penalty": 0,
+      "max_tokens": 2048,
+      "presence_penalty": 0,
+      "stop": null,
+      "stream": false,
+      "temperature": 0.2,
+      "top_p": 1
+    });
+
+    req.write(postData);
+
+    req.end();
+
   };
   return (
     <div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">
@@ -161,7 +159,7 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
           <CodeMirror
             value={sourceCode}
             theme={vscodeDark}
-            extensions={[python(), EditorView.lineWrapping]}
+            extensions={[cpp(),python(), EditorView.lineWrapping]}
             style={{ fontSize: 16 }}
             onChange={(value) => {
               setSourceCode(value as string);
