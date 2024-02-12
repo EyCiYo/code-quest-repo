@@ -122,7 +122,7 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
     let postData = JSON.stringify({
       "messages": [
         {
-          "content": "Evaluuate this code and provide tips to improve the code. Also give a score out of 10 ",
+          "content": "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. Also give a score out of 10 ",
           "role": "system"
         },
         {
