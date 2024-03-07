@@ -3,16 +3,16 @@ import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { BsCheck2Circle } from "react-icons/bs";
 import { TiStarOutline } from "react-icons/ti";
 import { FaFlagCheckered } from "react-icons/fa";
+import parse from 'html-react-parser';
 
 type ProblemDescriptionProps = {
     questiondata: DBProblem | null;
 };
 
-const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) => {
+const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata }) => {
 
-    function createMarkup(c:string) {
-        return {__html: c};
-    }
+    const difficultyTextColor = questiondata?.difficulty == "Easy" ? "text-dark-green-s" : questiondata?.difficulty == "Medium" ? "text-dark-yellow" : "text-dark-pink";
+    const difficultyBGColor = questiondata?.difficulty == "Easy" ? "bg-green-600" : questiondata?.difficulty == "Medium" ? "bg-yellow-600" : "bg-red-600";
 
     return (
         <div className="bg-dark-layer-1">
@@ -33,15 +33,15 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
                     <div className="w-full">
                         <div className="flex space-x-4">
                             <div className="flex-1 mr-2 text-lg text-white font-medium">
-                                {/* 1. Two Sum */}
+                                {/* Title */}
                                 {questiondata?.title}
                             </div>
                         </div>
                         <div className="flex items-center mt-3">
                             <div
-                                className={`text-olive bg-olive inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize `}
+                                className={`${difficultyTextColor} ${difficultyBGColor} inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize `}
                             >
-                                {/* Easy */}
+                                {/* Difficulty */}
                                 {questiondata?.difficulty}
                             </div>
                             <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
@@ -62,24 +62,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
 
                         {/* Problem Statement(paragraphs) */}
                         <div className="text-white text-sm" >
-                            {/* <p className="mt-3">
-                                Given an array of integers <code>nums</code> and
-                                an integer <code>target</code>, return
-                                <em>
-                                    indices of the two numbers such that they
-                                    add up to
-                                </em>{" "}
-                                <code>target</code>.
-                            </p>
-                            <p className="mt-3">
-                                You may assume that each input would have{" "}
-                                <strong>exactly one solution</strong>, and you
-                                may not use thesame element twice.
-                            </p>
-                            <p className="mt-3">
-                                You can return the answer in any order.
-                            </p> */}
-                            <div dangerouslySetInnerHTML={createMarkup(questiondata?.text as string)}/> 
+                            {parse(questiondata?.text as string)}
                         </div>
 
                         {/* Examples */}
@@ -140,26 +123,12 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({questiondata}) =
                         </div>
 
                         {/* Constraints */}
-                        <div className="my-5">
+                        <div className="my-5 pb-2">
                             <div className="text-white text-sm font-medium">
                                 Constraints:
                             </div>
                             <ul className="text-white ml-5 list-disc" >
-                                <div dangerouslySetInnerHTML={{__html:questiondata?.constraints as string}}></div>
-                                {/* <li className="mt-2">
-                                    <code>2 ≤ nums.length ≤ 10</code>
-                                </li>
-                                <li className="mt-2">
-                                    <code>-10 ≤ nums[i] ≤ 10</code>
-                                </li>
-                                <li className="mt-2">
-                                    <code>-10 ≤ target ≤ 10</code>
-                                </li>
-                                <li className="mt-2 text-sm">
-                                    <strong>
-                                        Only one valid answer exists.
-                                    </strong>
-                                </li> */}
+                                {parse(questiondata?.constraints as string)}
                             </ul>
                         </div>
                     </div>

@@ -4,6 +4,7 @@ import Topbar from "../../components/Topbar/Topbar";
 import Workspace from "@/components/Workspace/Workspace";
 import { DBProblem } from "@/utils/types";
 import { getQuestionData } from "../../utils/questionAPI";
+import PageLoading from "@/components/Modals/PageLoading";
 
 type ProblemPageProps = {};
 
@@ -27,7 +28,7 @@ const ProblemPage: React.FC<ProblemPageProps> = () => {
     return (
         <div>
             <Topbar problemPage={false} />
-            {question?(<Workspace questiondata={question}/>):(<div>Loading...</div>)}
+            {question?(<Workspace questiondata={question}/>):(<div><PageLoading/></div>)}
         </div>
     );
 };
