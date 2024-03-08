@@ -9,7 +9,6 @@ import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from 'https';
 import OpenAi from "openai";
-import env from "dotenv";
 
 // interface Props {
 //   sendDataToParent: (data: string) => void;

@@ -43,6 +43,7 @@ const Signup: React.FC<SignupProps> = () => {
                 inputs.email,
                 inputs.password
             );
+            console.log(newuser);
             if (!newuser) return;
             router.push("/");
         } catch (error: any) {
