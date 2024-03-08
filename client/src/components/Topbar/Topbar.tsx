@@ -50,16 +50,6 @@ const Topbar: React.FC<TopbarProps> = ({ problemPage, clock = true }) => {
                 )}
 
                 <div className="flex items-center space-x-4 flex-1 justify-end">
-                    {/* <div>
-                        <a
-                            href="https://www.buymeacoffee.com/burakorkmezz"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="bg-dark-fill-3 py-1.5 px-3 cursor-pointer rounded text-brand-orange hover:bg-dark-fill-2"
-                        >
-                            Premium
-                        </a>
-                    </div> */}
                     {clock ? <Timer /> : null}
                     {!user && (
                         <Link

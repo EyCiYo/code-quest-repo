@@ -1,23 +1,26 @@
 import { DBProblem } from "@/utils/types";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/firebase/firebase";
 import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { BsCheck2Circle } from "react-icons/bs";
 import { TiStarOutline } from "react-icons/ti";
 import { FaFlagCheckered } from "react-icons/fa";
 import parse from 'html-react-parser';
+import { User } from "firebase/auth";
 
 type ProblemDescriptionProps = {
     questiondata: DBProblem | null;
+    user: User | null| undefined;
 };
 
-const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata }) => {
-
+const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata },{user}) => {
     const difficultyTextColor = questiondata?.difficulty == "Easy" ? "text-dark-green-s" : questiondata?.difficulty == "Medium" ? "text-dark-yellow" : "text-dark-pink";
     const difficultyBGColor = questiondata?.difficulty == "Easy" ? "bg-green-600" : questiondata?.difficulty == "Medium" ? "bg-yellow-600" : "bg-red-600";
-
+    const questionDoneColor = user ? "text-green-s" : "text-dark-gray-6";
     return (
         <div className="bg-dark-layer-1">
             {/* TAB */}
-            <div className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden">
+            <div className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden text-dar">
                 <div
                     className={
                         "bg-dark-layer-1 rounded-t-[5px] px-5 py-[10px] text-xs cursor-pointer"
@@ -44,7 +47,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata })
                                 {/* Difficulty */}
                                 {questiondata?.difficulty}
                             </div>
-                            <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
+                            <div className={` ${questionDoneColor} rounded p-[3px] ml-4 text-lg transition-colors duration-200`}>
                                 <FaFlagCheckered />
                             </div>
                             {/* <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6">

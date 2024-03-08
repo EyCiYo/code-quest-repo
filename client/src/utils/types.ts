@@ -12,3 +12,15 @@ export type DBProblem = {
     examples:string;
     constraints:string;
 };
+
+export type UserStruct = {
+    username: string;
+    email: string;
+    name: string;
+    doj: string;
+    questions_solved: number[];
+    scores: {
+        [topic: string]: number;
+    };
+}
+
