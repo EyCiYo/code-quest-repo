@@ -9,12 +9,18 @@ import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from 'https';
 import OpenAi from "openai";
+import env from "dotenv";
+
+// interface Props {
+//   sendDataToParent: (data: string) => void;
+// }
 
 type PlaygroundProps = {
   questiondata: DBProblem | null;
+  sendDataToParent: (data: string) => void;
 };
 
-const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
+const Playground: React.FC<PlaygroundProps> = ({ questiondata,sendDataToParent }) => {
   const boilerPlate = atob(questiondata?.boilerplate_py as string);
   const driver = atob(questiondata?.driver_py as string);
   const header = "";
@@ -46,7 +52,7 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
         },
         body: JSON.stringify(data),
       };
-
+      //console.log("api key is ",String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY));
       const response = await fetch(url, options);
       const responseData = await response.json();
 
@@ -100,7 +106,6 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
         'Authorization': 'Bearer ' + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY)
       },
     };
-
     const req = https.request(options, (res) => {
       let chunks: Buffer[] = [];
 
@@ -110,8 +115,10 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
 
       res.on("end", () => {
         let body = Buffer.concat(chunks);
-        let content = JSON.parse(body.toString())
-        console.log(content.choices[0].message.content);
+        let content = JSON.parse(body.toString());
+        let feedbackResponse = content.choices[0].message.content;
+        console.log(feedbackResponse);
+        sendDataToParent(feedbackResponse);
       });
 
       res.on("error", (error) => {
@@ -122,7 +129,7 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata }) => {
     let postData = JSON.stringify({
       "messages": [
         {
-          "content": "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. Also give a score out of 10 ",
+          "content": "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. Also give a score out of 10.",
           "role": "system"
         },
         {
