@@ -77,18 +77,12 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata },
                                 <div className="example-card">
                                     <pre>
                                         <strong className="text-white">
-                                            Input:{" "}
-                                        </strong>{" "}
-                                        nums = [2,7,11,15], target = 9 <br />
-                                        <strong>Output:</strong> [0,1] <br />
-                                        <strong>Explanation:</strong>Because
-                                        nums[0] + nums[1] == 9, we return [0,
-                                        1].
+                                            Input:</strong> nums = 3<br />
+                                        <strong>Output:</strong> "III" <br />
+                                        <strong>Explanation:</strong> Because the number 5 is represented as three 'I's.
                                     </pre>
                                 </div>
                             </div>
-
-                            {/* Example 2 */}
                             <div>
                                 <p className="font-medium text-white ">
                                     Example 2:{" "}
@@ -96,29 +90,11 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata },
                                 <div className="example-card">
                                     <pre>
                                         <strong className="text-white">
-                                            Input:{" "}
-                                        </strong>{" "}
-                                        nums = [3,2,4], target = 6 <br />
-                                        <strong>Output:</strong> [1,2] <br />
-                                        <strong>Explanation:</strong>Because
-                                        nums[1] + nums[2] == 6, we return [1,
-                                        2].
-                                    </pre>
-                                </div>
-                            </div>
-                            {/* Example 3 */}
-                            <div>
-                                <p className="font-medium text-white ">
-                                    Example 3:{" "}
-                                </p>
-                                <div className="example-card">
-                                    <pre>
-                                        <strong className="text-white">
-                                            Input:{" "}
-                                        </strong>{" "}
-                                        nums = [3,3], target = 6
+                                            Input: 
+                                        </strong> nums = 4
                                         <br />
-                                        <strong>Output:</strong> [0,1] <br />
+                                        <strong>Output:</strong> "IV" <br />
+                                        <strong>Explanation:</strong> V = 5, I = 1. So, 4 is 5 - 1 = 4.
                                     </pre>
                                 </div>
                             </div>

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useRouter } from "next/router";
+import { addUserToDB } from "@/utils/addUserToDB";
 
 type SignupProps = {};
 
@@ -30,11 +31,10 @@ const Signup: React.FC<SignupProps> = () => {
             ...prev,
             [e.target.name]: e.target.value,
         }));
-        //console.log(inputs);
     };
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-        //console.log(inputs);
+
         e.preventDefault();
         if (!inputs.email || !inputs.name || !inputs.password)
             return alert("Please fill all fields");
@@ -43,8 +43,8 @@ const Signup: React.FC<SignupProps> = () => {
                 inputs.email,
                 inputs.password
             );
-            console.log(newuser);
             if (!newuser) return;
+            addUserToDB(inputs.email, inputs.name, newuser.user.uid);
             router.push("/");
         } catch (error: any) {
             alert(error.message);

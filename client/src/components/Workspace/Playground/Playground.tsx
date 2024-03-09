@@ -8,7 +8,6 @@ import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from 'https';
-import OpenAi from "openai";
 
 // interface Props {
 //   sendDataToParent: (data: string) => void;
@@ -188,9 +187,7 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata,sendDataToParent }
             <div className="mr-2 items-start mt-2 ">
               <div className="flex flex-wrap items-center gap-y-4">
                 <div
-                  className={`font-medium items-center transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap
-						
-									`}
+                  className={`font-medium items-center transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap`}
                 >
                   Case {0 + 1}
                 </div>

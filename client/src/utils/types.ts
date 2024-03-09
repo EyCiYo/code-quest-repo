@@ -14,11 +14,10 @@ export type DBProblem = {
 };
 
 export type UserStruct = {
-    username: string;
     email: string;
     name: string;
     doj: string;
-    questions_solved: number[];
+    question_solved: string[];
     scores: {
         [topic: string]: number;
     };
