@@ -3,21 +3,22 @@ import Split from "react-split";
 import ProblemDescription from "./ProblemDescription/ProblemDescription";
 import Playground from "./Playground/Playground";
 import Feedback from "./Feedback/Feedback";
-import { DBProblem } from "@/utils/types";
+import { DBProblem, UserStruct } from "@/utils/types";
 import { User } from "firebase/auth";
 
 type WorkspaceProps = {
   questiondata: DBProblem | null;
-  user: User | null | undefined;
+  userdata: UserStruct | null;
 };
 
 
-const Workspace: React.FC<WorkspaceProps> = ({ questiondata },{user}) => {
+const Workspace: React.FC<WorkspaceProps> = ({ questiondata },{usermetadata}) => {
 
   const [showDescription, setShowDescription] = useState(true);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showColor,setShowColor] = useState(1);
   const [dataFromPG,setDataFromPG] = useState<string>('');
+
 
   const problemDescription = () => {
     setShowDescription(true);
@@ -55,7 +56,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata },{user}) => {
             Feedback
           </div>
         </div>
-        {showDescription && <ProblemDescription questiondata={questiondata} user={user}/>}
+        {showDescription && <ProblemDescription questiondata={questiondata} userdata = {usermetadata}/>}
         {showFeedback && <Feedback dataFromPG={dataFromPG}/>}
       </div>
 

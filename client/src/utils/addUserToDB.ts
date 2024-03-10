@@ -1,13 +1,10 @@
 import { firestore } from "@/firebase/firebase";
 import {doc,setDoc} from "firebase/firestore";
-import dynamic from "next/dynamic";
-
-
 
 export async function addUserToDB(email: string, name: string, userid: string) {
         try {
             const uid = userid; 
-            const doj = new Date().toISOString(); 
+            const doj = new Date().toLocaleDateString('en-GB'); 
 
             await setDoc(doc(firestore, "users", uid), {
                 email: email,
