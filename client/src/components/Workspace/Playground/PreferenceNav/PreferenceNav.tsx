@@ -8,15 +8,14 @@ import {
 import SettingsModal from "@/components/Modals/SettingsModal";
 
 type PreferenceNavProps = {
-  //settings: ISettings;
-  //setSettings: React.Dispatch<React.SetStateAction<ISettings>>;
+  onPythonClick: () => void;
+  onCppClick: () => void;
 };
 
-const PreferenceNav: React.FC<PreferenceNavProps> = (
-  {
-    /*setSettings, settings*/
-  }
-) => {
+const PreferenceNav: React.FC<PreferenceNavProps> = ({
+  onPythonClick,
+  onCppClick,
+}) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const handleFullScreen = () => {
@@ -48,10 +47,17 @@ const PreferenceNav: React.FC<PreferenceNavProps> = (
   return (
     <div className="flex items-center justify-between bg-dark-layer-2 h-11 w-full ">
       <div className="flex items-center text-white">
-        <button className="flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium">
+        <button className="flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium" onClick={onPythonClick}>
           <div className="flex items-center px-1">
             <div className="text-xs text-label-2 dark:text-dark-label-2">
               Python
+            </div>
+          </div>
+        </button>
+        <button className="flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium ml-2" onClick={onCppClick}>
+          <div className="flex items-center px-1">
+            <div className="text-xs text-label-2 dark:text-dark-label-2">
+              C++
             </div>
           </div>
         </button>

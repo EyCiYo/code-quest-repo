@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
@@ -7,7 +7,8 @@ import { python } from "@codemirror/lang-python";
 import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
-import https, { RequestOptions } from 'https';
+import https, { RequestOptions } from "https";
+import OpenAi from "openai";
 
 // interface Props {
 //   sendDataToParent: (data: string) => void;
@@ -18,25 +19,73 @@ type PlaygroundProps = {
   sendDataToParent: (data: string) => void;
 };
 
-const Playground: React.FC<PlaygroundProps> = ({ questiondata,sendDataToParent }) => {
-  const boilerPlate = atob(questiondata?.boilerplate_py as string);
-  const driver = atob(questiondata?.driver_py as string);
-  const header = "";
+const Playground: React.FC<PlaygroundProps> = ({
+  questiondata,
+  sendDataToParent,
+}) => {
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
+
+  const [boilerPlate, setBoilerPlate] = useState<string>(
+    atob(questiondata?.boilerplate_py as string)
+  );
+  const [driver, setDriver] = useState<string>(
+    atob(questiondata?.driver_py as string)
+  );
+  const header = `
+  #include <iostream>
+  #include <vector>
+  #include <string>
+  #include <algorithm>
+  #include <cmath>
+  #include <unordered_map>
+  #include <unordered_set>
+  #include <queue>
+  #include <stack>
+  #include <utility>
+  using namespace std;
+  `;
+
   const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
+
+  const handlePythonClick = () => {
+    setSelectedLanguage("python");
+  };
+
+  const handleCppClick = () => {
+    setSelectedLanguage("cpp");
+  };
+  useEffect(() => {
+    let newBoilerPlate;
+    let newDriver;
+
+    if (selectedLanguage === "python") {
+      newBoilerPlate = atob(questiondata?.boilerplate_py as string);
+      newDriver = atob(questiondata?.driver_py as string);
+    } else {
+      newBoilerPlate = atob(questiondata?.boilerplate_cpp as string);
+      newDriver = atob(questiondata?.driver_cpp as string);
+    }
+
+    setBoilerPlate(newBoilerPlate);
+    setDriver(newDriver);
+    setSourceCode(newBoilerPlate);
+  }, [selectedLanguage, questiondata]);
 
   const handleRunButtonClick = async () => {
     // Perform actions with sourceCode, e.g., send API request
-
     try {
       const url =
         "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&fields=*";
-      const code = header + sourceCode + driver;
+      const code =
+        selectedLanguage == "python"
+          ? sourceCode + driver
+          : header + sourceCode + driver;
       console.log(code);
       const encodedCode = btoa(code);
 
       const data = {
         source_code: encodedCode,
-        language_id: 71,
+        language_id: selectedLanguage === "python" ? 71 : 52,
         base64_encoded: true,
       };
 
@@ -95,13 +144,14 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata,sendDataToParent }
   const handleSubmitButtonClick = async () => {
     console.log("Submit button clicked");
     const options: RequestOptions = {
-      'method': 'POST',
-      'hostname': 'api.deepseek.com',
-      'path': '/v1/chat/completions',
-      'headers': {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY)
+      method: "POST",
+      hostname: "api.deepseek.com",
+      path: "/v1/chat/completions",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization:
+          "Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
       },
     };
     const req = https.request(options, (res) => {
@@ -125,34 +175,38 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata,sendDataToParent }
     });
 
     let postData = JSON.stringify({
-      "messages": [
+      messages: [
         {
-          "content": "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. Also give a score out of 10.",
-          "role": "system"
+          content:
+            "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Also give a score out of 10. Provide the feedback in a professional manner without referencing yourself as I.",
+          role: "system",
         },
         {
-          "content": "#include <vector> std::vector<int> twoSum(const std::vector<int>& nums, int target) { std::vector<int> result; for (size_t i = 0; i < nums.size(); ++i) { for (size_t j = i + 1; j < nums.size(); ++j) { if (nums[i] + nums[j] == target) { result.push_back(static_cast<int>(i)); result.push_back(static_cast<int>(j)); return result; } } } return result; }",
-          "role": "user"
-        }
+          content: sourceCode,
+
+          role: "user",
+        },
       ],
-      "model": "deepseek-chat",
-      "frequency_penalty": 0,
-      "max_tokens": 2048,
-      "presence_penalty": 0,
-      "stop": null,
-      "stream": false,
-      "temperature": 0.2,
-      "top_p": 1
+      model: "deepseek-chat",
+      frequency_penalty: 0,
+      max_tokens: 2048,
+      presence_penalty: 0,
+      stop: null,
+      stream: false,
+      temperature: 0.2,
+      top_p: 1,
     });
 
     req.write(postData);
 
     req.end();
-
   };
   return (
     <div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">
-      <PreferenceNav />
+      <PreferenceNav
+        onPythonClick={handlePythonClick}
+        onCppClick={handleCppClick}
+      />
 
       <Split
         className="h-[calc(100vh-94px)]"
@@ -164,7 +218,7 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata,sendDataToParent }
           <CodeMirror
             value={sourceCode}
             theme={vscodeDark}
-            extensions={[cpp(),python(), EditorView.lineWrapping]}
+            extensions={[cpp(), python(), EditorView.lineWrapping]}
             style={{ fontSize: 16 }}
             onChange={(value) => {
               setSourceCode(value as string);
@@ -187,7 +241,9 @@ const Playground: React.FC<PlaygroundProps> = ({ questiondata,sendDataToParent }
             <div className="mr-2 items-start mt-2 ">
               <div className="flex flex-wrap items-center gap-y-4">
                 <div
-                  className={`font-medium items-center transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap`}
+                  className={`font-medium items-center transition-all focus:outline-none inline-flex bg-dark-fill-3 hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 cursor-pointer whitespace-nowrap
+              
+                    `}
                 >
                   Case {0 + 1}
                 </div>
