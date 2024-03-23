@@ -6,18 +6,32 @@ import { BsCheck2Circle } from "react-icons/bs";
 import { TiStarOutline } from "react-icons/ti";
 import { FaFlagCheckered } from "react-icons/fa";
 import parse from 'html-react-parser';
+import { useEffect, useState } from "react";
 import { getUserData } from "@/utils/userDataFetch";
 
 type ProblemDescriptionProps = {
     questiondata: DBProblem | null;
-    userdata: UserStruct | null;
 };
 
-const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata },{userdata}) => {
+const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata }) => {
+    const [userData, setUserData] = useState<UserStruct|null>(null);
+    const [user] = useAuthState(auth);
+    useEffect(() => {
+        if(user)
+        {
+            getUserData(user.uid).then((data) => {
+                setUserData(data);
+            }).catch((error) => {  
+                console.error('Error getting user data:', error);
+            });
+        }
+    }, [user]);
+    console.log('User data fetched:', userData);
+    console.log(userData?.question_solved.includes(questiondata?.id as string));
     const difficultyTextColor = questiondata?.difficulty == "Easy" ? "text-dark-green-s" : questiondata?.difficulty == "Medium" ? "text-dark-yellow" : "text-dark-pink";
     const difficultyBGColor = questiondata?.difficulty == "Easy" ? "bg-green-600" : questiondata?.difficulty == "Medium" ? "bg-yellow-600" : "bg-red-600";
-    const questionDoneColor = true ? "text-green-s" : "text-dark-gray-6";
-    console.log('User data fetched:', userdata?.question_solved);
+    const questionDoneColor = userData?.question_solved.includes(questiondata?.id as string) ? "text-green-500" : "text-red-500";
+    // console.log('User data fetched:', userdata?.question_solved);
 
 
 

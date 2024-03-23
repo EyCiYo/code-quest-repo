@@ -17,7 +17,18 @@ const PreferenceNav: React.FC<PreferenceNavProps> = ({
   onCppClick,
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isPython, setIsPython] = useState(true);
+  const handlePythonClick = () => {
+    setIsPython(true);
+    onPythonClick();
+  }
 
+  const handleCppClick = () => {
+    setIsPython(false);
+    onCppClick();
+  }
+  const pythonborder = isPython ? "border border-green-600" : "";
+  const cppborder = isPython ? "" : "border border-green-600";
   const handleFullScreen = () => {
     if (isFullScreen) {
       document.exitFullscreen();
@@ -47,14 +58,14 @@ const PreferenceNav: React.FC<PreferenceNavProps> = ({
   return (
     <div className="flex items-center justify-between bg-dark-layer-2 h-11 w-full ">
       <div className="flex items-center text-white">
-        <button className="flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium" onClick={onPythonClick}>
+        <button className= {` ${pythonborder} flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium`}  onClick={handlePythonClick}>
           <div className="flex items-center px-1">
             <div className="text-xs text-label-2 dark:text-dark-label-2">
               Python
             </div>
           </div>
         </button>
-        <button className="flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium ml-2" onClick={onCppClick}>
+        <button className={` ${cppborder} flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium ml-2`} onClick={handleCppClick}>
           <div className="flex items-center px-1">
             <div className="text-xs text-label-2 dark:text-dark-label-2">
               C++

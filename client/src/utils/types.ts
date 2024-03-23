@@ -11,6 +11,10 @@ export type DBProblem = {
     driver_py: string;
     examples:string;
     constraints:string;
+    testcases : {
+        input: string;
+        output: string;
+    }[];
 };
 
 export type UserStruct = {

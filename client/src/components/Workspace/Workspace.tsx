@@ -8,11 +8,10 @@ import { User } from "firebase/auth";
 
 type WorkspaceProps = {
   questiondata: DBProblem | null;
-  userdata: UserStruct | null;
 };
 
 
-const Workspace: React.FC<WorkspaceProps> = ({ questiondata },{usermetadata}) => {
+const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
 
   const [showDescription, setShowDescription] = useState(true);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -56,7 +55,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata },{usermetadata}) =>
             Feedback
           </div>
         </div>
-        {showDescription && <ProblemDescription questiondata={questiondata} userdata = {usermetadata}/>}
+        {showDescription && <ProblemDescription questiondata={questiondata}/>}
         {showFeedback && <Feedback dataFromPG={dataFromPG}/>}
       </div>
 

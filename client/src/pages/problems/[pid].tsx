@@ -12,14 +12,11 @@ import { getUserData } from "@/utils/userDataFetch";
 type ProblemPageProps = {};
 
 const ProblemPage: React.FC<ProblemPageProps> = () => {
-    const [user] = useAuthState(auth);
+    
     const router = useRouter();
     const { pid } = router.query;
     const problemId = pid as string;
     const [question, setQuestion] = useState<DBProblem | null>(null);
-    const [usermetadata, setUserData] = useState<UserStruct|null>(null);
-    console.log("User in pid:  ",user);
-    console.log("User data in pid:  ",usermetadata);
     useEffect(() => {
         if(pid)
         {
@@ -29,19 +26,11 @@ const ProblemPage: React.FC<ProblemPageProps> = () => {
                 console.error('Error getting question data:', error);
             });
         }
-        if(user)
-        {
-            getUserData(user.uid).then((data) => {
-                setUserData(data);
-            }).catch((error) => {  
-                console.error('Error getting user data:', error);
-            });
-        }
-    }, [pid,user]);
+    }, [pid]);
     return (
         <div>
             <Topbar problemPage={false} />
-            {question?(<Workspace questiondata={question} userdata={usermetadata}/>):(<div><PageLoading/></div>)}
+            {question?(<Workspace questiondata={question} />):(<div><PageLoading/></div>)}
         </div>
     );
 };

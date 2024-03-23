@@ -7,7 +7,7 @@ export async function getUserData(userid:string){
         const docRef = doc(firestore, 'users', userid);
         const docSnap = await getDoc(docRef);
         const userData: UserStruct = docSnap.data() as UserStruct;
-        console.log('User data fetched:', userData);
+        //console.log('User data fetched:', userData);
         return userData;
     }
     catch(error){
