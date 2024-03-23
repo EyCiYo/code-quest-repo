@@ -24,7 +24,6 @@ const Login: React.FC<LoginProps> = () => {
         email: "",
         password: "",
     });
-
     const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputs((prev) => ({
             ...prev,
