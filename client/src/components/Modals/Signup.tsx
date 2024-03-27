@@ -45,7 +45,7 @@ const Signup: React.FC<SignupProps> = () => {
             );
             if (!newuser) return;
             addUserToDB(inputs.email, inputs.name, newuser.user.uid);
-            router.push("/");
+            //router.push("/");
         } catch (error: any) {
             alert(error.message);
         }

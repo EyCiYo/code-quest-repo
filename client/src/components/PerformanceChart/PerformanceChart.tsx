@@ -1,47 +1,59 @@
-import React from "react";
+import { UserStruct } from "@/utils/types";
+import React, { useEffect } from "react";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
-const data = [
-  {
-    name: "Array",
-    score: 40,
-  },
-  {
-    name: "Dynamic Programming",
-    score: 60,
-  },
-  {
-    name: "Hash Table",
-    score: 40,
-  },
-  {
-    name: "Greedy",
-    score: 90,
-  },
-  {
-    name: "Math",
-    score: 50,
-  },
-  {
-    name: "Sorting",
-    score: 60,
-  },
-  {
-    name: "DFS",
-    score: 20,
-  },
-  {
-    name: "BFS",
-    score: 30,
-  },
-  {
-    name: "Binary Search",
-    score: 50,
-  },
-];
+type PerformanceChartProps = {
+  userData : UserStruct | null;
+};
+// const data = [
+//   {
+//     name: "Array",
+//     score: 40,
+//   },
+//   {
+//     name: "Dynamic Programming",
+//     score: 60,
+//   },
+//   {
+//     name: "Hash Table",
+//     score: 40,
+//   },
+//   {
+//     name: "Greedy",
+//     score: 90,
+//   },
+//   {
+//     name: "Math",
+//     score: 50,
+//   },
+//   {
+//     name: "Sorting",
+//     score: 60,
+//   },
+//   {
+//     name: "DFS",
+//     score: 20,
+//   },
+//   {
+//     name: "BFS",
+//     score: 30,
+//   },
+//   {
+//     name: "Binary Search",
+//     score: 50,
+//   },
+// ];
 
-const PerformanceChart: React.FC = () => {
+const PerformanceChart: React.FC<PerformanceChartProps> = ({userData}) => {
+
+  console.log("In Performance",userData);
+  const [data, setData] = React.useState(userData?.scores || []);
+  useEffect(() => {
+    if(userData?.scores)
+      setData(userData?.scores);
+  }, [userData]);
+
   return (
     <div className="flex flex-nowrap overflow-x-auto p-4">
       {data.map((item, index) => (

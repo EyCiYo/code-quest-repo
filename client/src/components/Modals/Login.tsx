@@ -42,7 +42,7 @@ const Login: React.FC<LoginProps> = () => {
                 inputs.password
             );
             if (!newuser) return;
-            router.push("/");
+            // router.push("/");
         } catch (error: any) {
             toast.error(error.message, {
                 theme: "dark",
