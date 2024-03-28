@@ -29,13 +29,13 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
     window.addEventListener("keydown", handleEscape);
   }, []);
   return (
-    <>
+    <main className="bg-dark-layer-2 min-h-screen ">
       <Topbar clock={false} />
       <h1 className="text-2xl text-center text-gray-700 dark:text-gray-400 font-medium uppercase mt-10 mb-5">
         LOOK AT THESE QUESTIONS
       </h1>
 
-      <div className="relative overflow-x-auto mx-auto px-6 pb-10">
+      <div className="relative overflow-x-auto mx-auto px-6 pb-10 bg-dark">
         <table className="text-sm text-left text-gray-500 dark:text-gray-400 sm:w-7/12 w-full max-w-[1200px] mx-auto">
           <thead className="text-xs text-gray-700 uppercase dark:text-gray-400 border-b ">
             <tr>
@@ -67,7 +67,9 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
                   : "text-dark-pink";
               return (
                 <tr
-                  className={`${idx % 2 == 1 ? "bg-dark-layer-1" : ""}`}
+                  className={`${
+                    idx % 2 == 1 ? "bg-dark-layer-1" : "bg-dark-layer-2"
+                  }`}
                   key={doc.id}
                 >
                   <th className="px-2 py-4 font-medium text-dark-green-s whitespace-nowrap">
@@ -131,7 +133,7 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
                     </div>
                 </tfoot>
             )} */}
-    </>
+    </main>
   );
 };
 export default ProblemTable;
