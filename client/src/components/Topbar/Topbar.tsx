@@ -51,7 +51,7 @@ const Topbar: React.FC<TopbarProps> = ({ problemPage, clock = true }) => {
 
                 <div className="flex items-center space-x-4 flex-1 justify-end">
                     {clock ? <Timer /> : null}
-                    {!user && (
+                    {/* {!user && (
                         <Link
                             href="/auth"
                             onClick={() => {
@@ -66,7 +66,7 @@ const Topbar: React.FC<TopbarProps> = ({ problemPage, clock = true }) => {
                                 Sign In
                             </button>
                         </Link>
-                    )}
+                    )} */}
                     {user && (
                         <div className="cursor-pointer group relative">
                             <Link href="/dashboard">
