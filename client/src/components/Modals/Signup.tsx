@@ -50,9 +50,11 @@ const Signup: React.FC<SignupProps> = () => {
     }
   };
 
+
   useEffect(() => {
     if (error) alert(error.message);
   }, [error]);
+
 
   return (
     <form className="px-6 pb-4 space-y-6" onSubmit={handleRegister}>

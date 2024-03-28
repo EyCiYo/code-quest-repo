@@ -32,6 +32,7 @@ const Login: React.FC<LoginProps> = () => {
     //console.log(inputs);
   };
 
+
   const handleLogIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputs.email || !inputs.password)
@@ -56,6 +57,7 @@ const Login: React.FC<LoginProps> = () => {
       });
     }
   };
+
 
   useEffect(() => {
     if (error)

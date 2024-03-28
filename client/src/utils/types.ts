@@ -22,8 +22,11 @@ export type UserStruct = {
     name: string;
     doj: string;
     question_solved: string[];
-    scores: {
-        [topic: string]: number;
-    };
+    scores: [
+        {
+            name: string;
+            score: number;
+        }
+    ];
 }
 
