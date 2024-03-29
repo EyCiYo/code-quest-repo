@@ -10,14 +10,14 @@ export default function App({ Component, pageProps }: AppProps) {
     return (
         <RecoilRoot>
             <Head>
-                <title>MainProject</title>
+                <title>CodeQuest</title>
                 <meta
                     name="viewport"
                     content="width=device-width, initial-scale=1"
                 ></meta>
                 <meta
                     name="description"
-                    content="Trying leetclone for mainproject"
+                    content="Personalised Coding Interview Preparation Platform"
                 />
             </Head>
             <ToastContainer />
