@@ -8,30 +8,35 @@ import { FaFlagCheckered } from "react-icons/fa";
 import parse from 'html-react-parser';
 import { useEffect, useState } from "react";
 import { getUserData } from "@/utils/userDataFetch";
+// import { getUserAndQuestion } from "../../../../model";
 
 type ProblemDescriptionProps = {
     questiondata: DBProblem | null;
+    getUserId :(userId: string) => void;
+
 };
 
-const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata }) => {
+const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata,getUserId }) => {
     const [userData, setUserData] = useState<UserStruct|null>(null);
     const [user] = useAuthState(auth);
     useEffect(() => {
         if(user)
         {
             getUserData(user.uid).then((data) => {
+                // getUserAndQuestion(user.uid,questiondata);
+                getUserId(user.uid);
                 setUserData(data);
             }).catch((error) => {  
                 console.error('Error getting user data:', error);
             });
         }
     }, [user]);
-    console.log('User data fetched:', userData);
-    console.log(userData?.question_solved.includes(questiondata?.id as string));
+    // console.log('User data fetched:', userData);
+    // console.log(userData?.question_solved.includes(questiondata?.id as string));
     const difficultyTextColor = questiondata?.difficulty == "Easy" ? "text-dark-green-s" : questiondata?.difficulty == "Medium" ? "text-dark-yellow" : "text-dark-pink";
     const difficultyBGColor = questiondata?.difficulty == "Easy" ? "bg-green-600" : questiondata?.difficulty == "Medium" ? "bg-yellow-600" : "bg-red-600";
     const questionDoneColor = userData?.question_solved.includes(questiondata?.id as string) ? "text-green-500" : "text-red-500";
-    // console.log('User data fetched:', userdata?.question_solved);
+    // console.log('User data fetched :', userdata?.question_solved);
 
 
 

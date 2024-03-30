@@ -1,15 +1,18 @@
-// scoreArray should be stored in the database for each user and is retrieved whenever the user the solves a problem 
-var scoresArray = {
-    "array": 10,
-    "math":20,
-    "string": 31,
-    "hash table":60,
-    "binary search":22,
-    "tree": 10,
-    "graph": 15,
-    "dynamic programming": 5
-}
+// scoresArray should be stored in the database for each user and is retrieved whenever the user the solves a problem 
+import { getUserData } from "@/utils/userDataFetch"
 
+// var scoresArray = {
+//     "array": 10,
+//     "math":20,
+//     "string": 31,
+//     "hash table":60,
+//     "binary search":22,
+//     "tree": 10,
+//     "graph": 15,
+//     "dynamic programming": 5
+// }
+
+// var scoresArray={}
 var difficultyWeight = {
     "easy" : 1,
     "medium" : 2
@@ -26,20 +29,58 @@ var topicWeight = {
     "dynamic programming": 0.7
 }
 
-let topicList=[]
-let difficultyLevel="";
-let score=0;
+// let topicList=[]
+// let difficultyLevel="";
+// let score=0;
 
 //-----------------------------------------------------------------//
 //function definitions
 
-export function setScoreOnSubmit(questionData) {
-    console.log("inside the model.js file");
-    difficultyLevel=questionData.difficulty.toLowerCase();
-    topicList=questionData.topics.toLowerCase().split(",");
-    score=6;
-    updateScores(score,topicList,difficultyLevel);
-    let recommendQuestions=getRecommendQuestions(scoresArray);
+function convertToScoresObject(keyValueArray) {
+    var arrayOfScores = {};
+
+    for (var i = 0; i < keyValueArray.length; i++) {
+        var pair = keyValueArray[i];
+        arrayOfScores[pair.name] = pair.score;
+    }
+
+    return arrayOfScores;
+}
+function convertToScoresArray(scoresObject) {
+    var keyValueArray = [];
+    for (var key in scoresObject) {
+        if (scoresObject.hasOwnProperty(key)) {
+            keyValueArray.push({ score: scoresObject[key], name: key });
+        }
+    }
+
+}
+export async function setScoreOnSubmit(questionData,userId,userScore) {
+    console.log("inside setScoreOnSubmit");
+    try{
+        let userInfo= await getUserData(userId);
+        if(userInfo){
+            let solvedQuestions=userInfo.question_solved;
+            let userScoresAll=userInfo.scores;
+            console.log('User data fetched at model.js:',userInfo);
+            let scoresObject=convertToScoresObject(userScoresAll);
+            // console.log("inside the model.js file");
+            let difficultyLevel=questionData.difficulty.toLowerCase();
+            let topicList=questionData.topics.toLowerCase().split(",");
+            let score=userScore;
+            console.log(`score is ${score}`);
+            scoresObject=updateScores(scoresObject,score,topicList,difficultyLevel);
+            let recommendQuestions=getRecommendQuestions(scoresObject);
+
+            userScoresAll=convertToScoresArray(scoresObject) // to be updated on database
+            solvedQuestions.push(questionData.id);  // to be updated on database
+            
+        }else{
+            console.log("could not get user data at model.js");
+        }
+    }catch (error) {
+        console.error('Error setting score:', error);
+    }
 }
 
 // initialScores using no. of testcases passed 
@@ -52,21 +93,21 @@ function intialScores(scoresArray,topicList,testcases,score){
 }
 
 function getLearningRate(score) {
-    const k=0.7;  // k increases change decreases
-    const checkpoint=50; // after 50 points gained decreases significantly
+    const k=0.7;  // k increases, change decreases
+    const checkpoint=50; // after 50, points gained decreases significantly
     return 1 / (1 + Math.exp(k * (score - checkpoint)));
 }
 
-function updateScores(score,topicList,difficultyLevel) {
+function updateScores(scoresArray,score,topicList,difficultyLevel) {
     topicList.forEach((topic)=>{
-        console.log("current topic is ",topic);
         const topicScoreIncrease = score * topicWeight[topic] * difficultyWeight[difficultyLevel];
         scoresArray[topic] = (scoresArray[topic]+ topicScoreIncrease * getLearningRate(scoresArray[topic]) * 1);
     }) ;
+    return scoresArray;
 }
 
-function getRecommendQuestions(scoreArray){
-    let normalizedScores = structuredClone(scoreArray);
+function getRecommendQuestions(scoresArray){
+    let normalizedScores = structuredClone(scoresArray);
     let sum=0;
     const totalQuestions=20;
     for(let key in normalizedScores){
