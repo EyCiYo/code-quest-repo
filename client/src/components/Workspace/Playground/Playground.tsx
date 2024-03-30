@@ -181,7 +181,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		messages: [
 			{
 			content:
-				"Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Also give a score out of 10. Provide the feedback in a professional manner without referencing yourself as I.",
+				"Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.",
 			role: "system",
 			},
 			{
@@ -201,6 +201,32 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		});
 
 		req.write(postData);
+
+		let pointsData = JSON.stringify({
+			messages: [
+				{
+				content:
+					"Evaluate this code and give a score out of 10.",
+				role: "system",
+				},
+				{
+				content: sourceCode,
+				role: "user",
+				},
+			],
+			model: "deepseek-chat",
+			frequency_penalty: 0,
+			max_tokens: 2048,
+			presence_penalty: 0,
+			stop: null,
+			stream: false,
+			temperature: 0.2,
+			top_p: 1,
+			});
+	
+		req.write(pointsData);
+
+		
 
 		req.end();
 	};
