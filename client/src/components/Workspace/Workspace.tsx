@@ -34,6 +34,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
   const handleDataFromPG = (data:string)=>{
     setDataFromPG(data);
   }
+  
   return (
     <Split className="split" sizes={[50, 50]}>
       <div>
@@ -62,5 +63,6 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
       <Playground questiondata={questiondata} sendDataToParent={handleDataFromPG} />
     </Split>
   );
+  
 };
 export default Workspace;

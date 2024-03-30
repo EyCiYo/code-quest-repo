@@ -9,6 +9,7 @@ import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
 import OpenAi from "openai";
+import { setScoreOnSubmit } from '../../../../model.js';
 
 // interface Props {
 //   sendDataToParent: (data: string) => void;
@@ -163,13 +164,20 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		res.on("data", (chunk: Buffer) => {
 			chunks.push(chunk);
 		});
-
+		
 		res.on("end", () => {
+			
 			let body = Buffer.concat(chunks);
 			let content = JSON.parse(body.toString());
+			console.log(body);
+			// console.log(content)
 			let feedbackResponse = content.choices[0].message.content;
-			console.log(feedbackResponse);
 			sendDataToParent(feedbackResponse);
+
+			// // let points = content.choices[1].message.content
+			// console.log(feedbackResponse);
+			// // console.log(`points is ${points}`);
+			
 		});
 
 		res.on("error", (error) => {
@@ -181,12 +189,21 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		messages: [
 			{
 			content:
-				"Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.",
+				"Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.Evaluate this code and at the end of your feedback in the next line give a score out of 10 in the format 'Score is 6/10' and there should not be anything after the score.",
 			role: "system",
 			},
 			{
 			content: sourceCode,
 
+			role: "user",
+			},
+			{
+			content:
+				"Evaluate this code and give a score out of 10.",
+			role: "system",
+			},
+			{
+			content: sourceCode,
 			role: "user",
 			},
 		],
@@ -202,34 +219,35 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 
 		req.write(postData);
 
-		let pointsData = JSON.stringify({
-			messages: [
-				{
-				content:
-					"Evaluate this code and give a score out of 10.",
-				role: "system",
-				},
-				{
-				content: sourceCode,
-				role: "user",
-				},
-			],
-			model: "deepseek-chat",
-			frequency_penalty: 0,
-			max_tokens: 2048,
-			presence_penalty: 0,
-			stop: null,
-			stream: false,
-			temperature: 0.2,
-			top_p: 1,
-			});
-	
-		req.write(pointsData);
 
-		
+		// let pointsData = JSON.stringify({
+		// 	messages: [
+		// 		{
+		// 		content:
+		// 			"Evaluate this code and give a score out of 10.",
+		// 		role: "system",
+		// 		},
+		// 		{
+		// 		content: sourceCode,
+		// 		role: "user",
+		// 		},
+		// 	],
+		// 	model: "deepseek-chat",
+		// 	frequency_penalty: 0,
+		// 	max_tokens: 2048,
+		// 	presence_penalty: 0,
+		// 	stop: null,
+		// 	stream: false,
+		// 	temperature: 0.2,
+		// 	top_p: 1,
+		// 	});
+	
+		// req.write(pointsData);
 
 		req.end();
+		// setScoreOnSubmit(questiondata);
 	};
+	setScoreOnSubmit(questiondata);
 	return (
 		<div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">
 		<PreferenceNav
