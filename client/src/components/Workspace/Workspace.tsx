@@ -5,6 +5,7 @@ import Playground from "./Playground/Playground";
 import Feedback from "./Feedback/Feedback";
 import { DBProblem, UserStruct } from "@/utils/types";
 import { User } from "firebase/auth";
+import { getUserData } from "@/utils/userDataFetch";
 
 type WorkspaceProps = {
   questiondata: DBProblem | null;
@@ -17,6 +18,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showColor,setShowColor] = useState(1);
   const [dataFromPG,setDataFromPG] = useState<string>('');
+  const [userId,setUserId]=useState('');
 
 
   const problemDescription = () => {
@@ -34,6 +36,10 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
   const handleDataFromPG = (data:string)=>{
     setDataFromPG(data);
   }
+  const handleUserId = (data:string)=>{
+    setUserId(data);
+  }
+  
   return (
     <Split className="split" sizes={[50, 50]}>
       <div>
@@ -55,12 +61,13 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
             Feedback
           </div>
         </div>
-        {showDescription && <ProblemDescription questiondata={questiondata}/>}
+        {showDescription && <ProblemDescription questiondata={questiondata} getUserId={handleUserId}/>}
         {showFeedback && <Feedback dataFromPG={dataFromPG}/>}
       </div>
 
-      <Playground questiondata={questiondata} sendDataToParent={handleDataFromPG} />
+      <Playground questiondata={questiondata} sendDataToParent={handleDataFromPG} userIdFromProblem={userId}/>
     </Split>
   );
+  
 };
 export default Workspace;

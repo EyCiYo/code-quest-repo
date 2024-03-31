@@ -9,6 +9,8 @@ import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
 import OpenAi from "openai";
+import { setScoreOnSubmit } from '../../../../model.js';
+import { getUserData } from "@/utils/userDataFetch";
 
 // interface Props {
 //   sendDataToParent: (data: string) => void;
@@ -17,9 +19,11 @@ import OpenAi from "openai";
 type PlaygroundProps = {
 	questiondata: DBProblem | null;
 	sendDataToParent: (data: string) => void;
+	userIdFromProblem: string;
 };
 
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,}) => {
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,userIdFromProblem}) => {
+	console.log(questiondata);
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
   	const [boilerPlate, setBoilerPlate] = useState<string>(
@@ -46,9 +50,31 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
 	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
 
+	const getScore = (feedback: string) =>{
+		const last = '/10';
+		const indexLast = feedback.indexOf(last);
+		const first = 'Score is ';
+		const indexFirst = feedback.indexOf(first);
+		return parseInt(feedback.substring(indexFirst+first.length, indexLast))
+	}
+
+	const isQuestionSolved = async (questionId:string,userId:string) =>{
+		try{
+			let userInfo= await getUserData(userId);
+			if(userInfo){
+				let solvedQuestions = userInfo.question_solved;
+				return solvedQuestions.includes(questionId);
+			}else{
+				console.log("could not get user data");
+				return false;
+			}
+		}catch (error) {
+			console.error('Error setting score:', error);
+			return false;
+		}
+	}
 	const handleCaseSelect = (index:number) => {
 		setTestCaseIdx(index);
-
 	}
 	const handlePythonClick = () => {
 		setSelectedLanguage("python");
@@ -144,8 +170,16 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		}
 	};
 
-	const handleSubmitButtonClick = async () => {
+	const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
 		console.log("Submit button clicked");
+		if(questiondata==null){
+			return;
+		}
+		const showFeedback = await isQuestionSolved(questiondata.id,userIdFromProblem);
+		if(showFeedback){
+			console.log("question already solved.");
+			return;
+		}
 		const options: RequestOptions = {
 		method: "POST",
 		hostname: "api.deepseek.com",
@@ -163,13 +197,17 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		res.on("data", (chunk: Buffer) => {
 			chunks.push(chunk);
 		});
-
+		
 		res.on("end", () => {
+			
 			let body = Buffer.concat(chunks);
 			let content = JSON.parse(body.toString());
+			console.log(body);
+			// console.log(content)
 			let feedbackResponse = content.choices[0].message.content;
-			console.log(feedbackResponse);
 			sendDataToParent(feedbackResponse);
+			showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
+			// setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse));		
 		});
 
 		res.on("error", (error) => {
@@ -181,7 +219,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		messages: [
 			{
 			content:
-				"Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Also give a score out of 10. Provide the feedback in a professional manner without referencing yourself as I.",
+				"Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.Evaluate this code and at the end of your feedback in the next line give a score out of 10 in the format 'Score is 6/10' and there should not be anything after the score.",
 			role: "system",
 			},
 			{
@@ -202,8 +240,35 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 
 		req.write(postData);
 
+
+		// let pointsData = JSON.stringify({
+		// 	messages: [
+		// 		{
+		// 		content:
+		// 			"Evaluate this code and give a score out of 10.",
+		// 		role: "system",
+		// 		},
+		// 		{
+		// 		content: sourceCode,
+		// 		role: "user",
+		// 		},
+		// 	],
+		// 	model: "deepseek-chat",
+		// 	frequency_penalty: 0,
+		// 	max_tokens: 2048,
+		// 	presence_penalty: 0,
+		// 	stop: null,
+		// 	stream: false,
+		// 	temperature: 0.2,
+		// 	top_p: 1,
+		// 	});
+	
+		// req.write(pointsData);
+
 		req.end();
+		// setScoreOnSubmit(questiondata);
 	};
+	
 	return (
 		<div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">
 		<PreferenceNav
@@ -273,7 +338,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,})
 		</Split>
 		<EditorFooter
 			onRunButtonClick={handleRunButtonClick}
-			onSubmitButtonClick={handleSubmitButtonClick}
+			// onSubmitButtonClick={handleSubmitButtonClick}
+			onSubmitButtonClick={() => handleSubmitButtonClick(questiondata)}
 		/>
 		</div>
 	);
