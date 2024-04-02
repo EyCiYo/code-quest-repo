@@ -11,6 +11,7 @@ import https, { RequestOptions } from "https";
 import OpenAi from "openai";
 import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
+import { get } from "http";
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
@@ -22,8 +23,10 @@ type PlaygroundProps = {
 	userIdFromProblem: string;
 };
 
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
-	console.log(questiondata);
+
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,userIdFromProblem}) => {
+	//console.log(questiondata);
+
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
   	const [boilerPlate, setBoilerPlate] = useState<string>(
@@ -115,7 +118,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		setBoilerPlate(newBoilerPlate);
 		setDriver(newDriver);
 		setSourceCode(newBoilerPlate);
-	}, [selectedLanguage, questiondata]);
+	}, [selectedLanguage]);
 
 	const loadSubmitButton = async ()=>{
 		let beginner = await isBeginner(userIdFromProblem);
@@ -125,6 +128,30 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 	}
 	loadSubmitButton();
 	const handleRunButtonClick = async (questiondata:DBProblem|null) => {
+
+	const getLanguageId = async (lang : string) => {
+		const url = 'https://judge0-ce.p.rapidapi.com/languages';
+		const options = {
+			method: 'GET',
+			headers: {
+				'X-RapidAPI-Key': String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
+				'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
+			}
+		};
+		const reqLang = lang === 'python' ? 'Python (3.8.1)' : 'C++ (GCC 8.3.0)';
+		try {
+			const response = await fetch(url, options);
+			const result = await response.json();
+			for(var i=0;i<result.length;i++){
+				if(result[i].name === reqLang){
+					console.log(result[i].id);
+					return result[i].id as Number;
+				}
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	}
 		// Perform actions with sourceCode, e.g., send API request
 
 		
@@ -140,7 +167,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		let testcases=0;
 		try {
 		const url =
-			"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&fields=*";
+			"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
 		const code =
 			selectedLanguage === "python"
 			? sourceCode + driver
@@ -150,7 +177,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 
 		const data = {
 			source_code: encodedCode,
-			language_id: selectedLanguage === "python" ? 71 : 52,
+			language_id: await getLanguageId(selectedLanguage),
 			base64_encoded: true,
 		};
 
@@ -242,7 +269,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			
 			let body = Buffer.concat(chunks);
 			let content = JSON.parse(body.toString());
-			console.log(body);
+			//console.log(body);
 			// console.log(content)
 			let feedbackResponse = content.choices[0].message.content;
 			sendDataToWS(feedbackResponse);
