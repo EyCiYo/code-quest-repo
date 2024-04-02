@@ -9,6 +9,7 @@ import { authModalState } from "@/atoms/authModalAtoms";
 import { useSetRecoilState, useRecoilValue } from "recoil";
 import { useRouter } from "next/router";
 import AuthModal from "@/components/Modals/AuthModal";
+import Logout from "@/components/Buttons/Logout";
 
 export default function Home() {
   const [user] = useAuthState(auth);
@@ -40,7 +41,10 @@ export default function Home() {
   };
 
   return (
-    <main className="bg-dark-layer-2 bg-gradient-to-b from-blue-900 to-black min-h-screen flex flex-col items-center justify-center">
+    <main className="bg-dark-layer-2 bg-gradient-to-b from-gray-600 to-black min-h-screen flex flex-col items-center justify-center">
+      <header className="absolute top-0 right-0 p-8">
+        {user && <Logout />}
+      </header>
       <img
         src="/logo.png"
         alt="Your Logo"
@@ -55,7 +59,7 @@ export default function Home() {
           <div className="mt-8">
             <button
               onClick={handleLoginButtonClick}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded "
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded "
             >
               Login
             </button>
@@ -64,19 +68,19 @@ export default function Home() {
         {user && (
           <div className="mt-10 flex flex-row justify-evenly">
             <Link
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               href="/dashboard"
             >
               Dashboard
             </Link>
             <Link
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               href="/recommendations"
             >
               Recommendations
             </Link>
             <Link
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               href="/problemtable"
             >
               Problems

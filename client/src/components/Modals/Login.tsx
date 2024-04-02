@@ -32,7 +32,6 @@ const Login: React.FC<LoginProps> = () => {
     //console.log(inputs);
   };
 
-
   const handleLogIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputs.email || !inputs.password)
@@ -58,7 +57,6 @@ const Login: React.FC<LoginProps> = () => {
     }
   };
 
-
   useEffect(() => {
     if (error)
       toast.error(error.message, {
@@ -80,7 +78,7 @@ const Login: React.FC<LoginProps> = () => {
           type="email"
           name="email"
           id="email"
-          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
+          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-gray-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
           placeholder="name@email.com"
         />
       </div>
@@ -93,14 +91,14 @@ const Login: React.FC<LoginProps> = () => {
           type="password"
           name="password"
           id="password"
-          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
+          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-gray-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
           placeholder="********"
         />
       </div>
 
       <button
         type="submit"
-        className="w-full text-white focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-500 hover:bg-blue-900"
+        className="w-full text-white focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-gray-500 hover:bg-gray-900"
       >
         {loading ? "Loading..." : "Log In"}
       </button>
@@ -111,7 +109,7 @@ const Login: React.FC<LoginProps> = () => {
       >
         <a
           href="#"
-          className="text-sm text-blue-700 hover:underline w-full text-right block"
+          className="text-sm text-gray-300 hover:underline w-full text-right block"
         >
           Forgot Password
         </a>
@@ -121,7 +119,7 @@ const Login: React.FC<LoginProps> = () => {
         Not Registered?&nbsp;
         <a
           href="#"
-          className="text-blue-700 hover:underline"
+          className="text-gray-300 hover:underline"
           onClick={() => handleClick("register")}
         >
           Create Account
