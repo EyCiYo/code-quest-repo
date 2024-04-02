@@ -11,6 +11,7 @@ import https, { RequestOptions } from "https";
 import OpenAi from "openai";
 import { setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
+import { get } from "http";
 
 // interface Props {
 //   sendDataToParent: (data: string) => void;
@@ -23,7 +24,7 @@ type PlaygroundProps = {
 };
 
 const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,userIdFromProblem}) => {
-	console.log(questiondata);
+	//console.log(questiondata);
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
   	const [boilerPlate, setBoilerPlate] = useState<string>(
@@ -98,13 +99,36 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		setBoilerPlate(newBoilerPlate);
 		setDriver(newDriver);
 		setSourceCode(newBoilerPlate);
-	}, [selectedLanguage, questiondata]);
+	}, [selectedLanguage]);
 
+	const getLanguageId = async (lang : string) => {
+		const url = 'https://judge0-ce.p.rapidapi.com/languages';
+		const options = {
+			method: 'GET',
+			headers: {
+				'X-RapidAPI-Key': String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
+				'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
+			}
+		};
+		const reqLang = lang === 'python' ? 'Python (3.8.1)' : 'C++ (GCC 8.3.0)';
+		try {
+			const response = await fetch(url, options);
+			const result = await response.json();
+			for(var i=0;i<result.length;i++){
+				if(result[i].name === reqLang){
+					console.log(result[i].id);
+					return result[i].id as Number;
+				}
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	}
 	const handleRunButtonClick = async () => {
 		// Perform actions with sourceCode, e.g., send API request
 		try {
 		const url =
-			"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&fields=*";
+			"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
 		const code =
 			selectedLanguage === "python"
 			? sourceCode + driver
@@ -114,7 +138,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 
 		const data = {
 			source_code: encodedCode,
-			language_id: selectedLanguage === "python" ? 71 : 52,
+			language_id: await getLanguageId(selectedLanguage),
 			base64_encoded: true,
 		};
 
@@ -202,7 +226,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 			
 			let body = Buffer.concat(chunks);
 			let content = JSON.parse(body.toString());
-			console.log(body);
+			//console.log(body);
 			// console.log(content)
 			let feedbackResponse = content.choices[0].message.content;
 			sendDataToParent(feedbackResponse);
