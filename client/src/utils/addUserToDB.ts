@@ -10,7 +10,9 @@ export async function addUserToDB(email: string, name: string, userid: string) {
                 email: email,
                 name: name,
                 doj: doj,
+                is_beginner:true,
                 question_solved: [],
+                initial_problem_count:0,
                 scores: [
                     {
                         name: "Array",
