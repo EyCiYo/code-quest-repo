@@ -9,20 +9,20 @@ import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
 import OpenAi from "openai";
-import { setScoreOnSubmit } from '../../../../model.js';
+import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
 
 // interface Props {
-//   sendDataToParent: (data: string) => void;
+//   sendDataToWS: (data: string) => void;
 // }
 
 type PlaygroundProps = {
 	questiondata: DBProblem | null;
-	sendDataToParent: (data: string) => void;
+	sendDataToWS: (data: string) => void;
 	userIdFromProblem: string;
 };
 
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,userIdFromProblem}) => {
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
 	console.log(questiondata);
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -33,6 +33,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
   	const [driver, setDriver] = useState<string>(
     	atob(questiondata?.driver_py as string)
   	);
+	const [beginnerValue, setBeginnerValue] = useState(true);
 	const header = `
 	#include <iostream>
 	#include <vector>
@@ -56,6 +57,22 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		const first = 'Score is ';
 		const indexFirst = feedback.indexOf(first);
 		return parseInt(feedback.substring(indexFirst+first.length, indexLast))
+	}
+
+	const isBeginner = async (userId:string) =>{
+		try{
+			console.log("inside isBeginner function")
+			let userInfo= await getUserData(userId);
+			if(userInfo){
+				return userInfo.is_beginner;  // initially true
+			}else{
+				console.log("could not get user data");
+				return true;
+			}
+		}catch (error) {
+			console.error('Error getting beginner status:', error);
+			return true;
+		}
 	}
 
 	const isQuestionSolved = async (questionId:string,userId:string) =>{
@@ -100,8 +117,27 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		setSourceCode(newBoilerPlate);
 	}, [selectedLanguage, questiondata]);
 
-	const handleRunButtonClick = async () => {
+	const loadSubmitButton = async ()=>{
+		let beginner = await isBeginner(userIdFromProblem);
+		// beginner=false;
+		console.log("beginner value is",beginner);
+		setBeginnerValue(beginner);
+	}
+	loadSubmitButton();
+	const handleRunButtonClick = async (questiondata:DBProblem|null) => {
 		// Perform actions with sourceCode, e.g., send API request
+
+		
+
+		if(questiondata==null){
+			return
+		}
+		const showTestcaseScore = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
+		if(!showTestcaseScore){
+			console.log("question already solved.");
+			return;
+		}
+		let testcases=0;
 		try {
 		const url =
 			"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&fields=*";
@@ -156,14 +192,18 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		const passArray = resultArray.filter(
 			(testCase) => testCase === "1" || testCase === "0"
 		);
+		console.log("testcase array is ",passArray);
 		var strRes: string = "";
+		
 		passArray.forEach((testCase, index) => {
 			if (testCase === "1") {
-			strRes += `Test case ${index + 1} passed` + "\n";
+				testcases++;
+				strRes += `Test case ${index + 1} passed` + "\n";
 			} else {
-			strRes += `Test case ${index + 1} failed` + "\n";
+				strRes += `Test case ${index + 1} failed` + "\n";
 			}
 		});
+		showTestcaseScore && beginnerValue ? setInitialScore(questiondata,userIdFromProblem,testcases) : console.log("question already solved") ;
 		alert(strRes);
 		} catch (error) {
 		console.error(error);
@@ -175,8 +215,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		if(questiondata==null){
 			return;
 		}
-		const showFeedback = await isQuestionSolved(questiondata.id,userIdFromProblem);
-		if(showFeedback){
+		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
+		if(!showFeedback){
 			console.log("question already solved.");
 			return;
 		}
@@ -205,9 +245,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 			console.log(body);
 			// console.log(content)
 			let feedbackResponse = content.choices[0].message.content;
-			sendDataToParent(feedbackResponse);
+			sendDataToWS(feedbackResponse);
 			showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
-			// setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse));		
 		});
 
 		res.on("error", (error) => {
@@ -275,7 +314,6 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 			onPythonClick={handlePythonClick}
 			onCppClick={handleCppClick}
 		/>
-
 		<Split
 			className="h-[calc(100vh-94px)]"
 			direction="vertical"
@@ -337,9 +375,10 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 			</div>
 		</Split>
 		<EditorFooter
-			onRunButtonClick={handleRunButtonClick}
+			onRunButtonClick={() => handleRunButtonClick(questiondata)}
 			// onSubmitButtonClick={handleSubmitButtonClick}
 			onSubmitButtonClick={() => handleSubmitButtonClick(questiondata)}
+			isBeginner = {beginnerValue}
 		/>
 		</div>
 	);
