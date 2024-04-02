@@ -45,16 +45,19 @@ const Signup: React.FC<SignupProps> = () => {
       if (!newuser) return;
       addUserToDB(inputs.email, inputs.name, newuser.user.uid);
       router.push("/");
+      setAuthModalState((prev) => ({
+        ...prev,
+        isOpen: false,
+        type: "login",
+      }));
     } catch (error: any) {
       alert(error.message);
     }
   };
 
-
   useEffect(() => {
     if (error) alert(error.message);
   }, [error]);
-
 
   return (
     <form className="px-6 pb-4 space-y-6" onSubmit={handleRegister}>
@@ -68,7 +71,7 @@ const Signup: React.FC<SignupProps> = () => {
           type="email"
           name="email"
           id="email"
-          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
+          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-gray-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
           placeholder="name@email.com"
         />
       </div>
@@ -81,7 +84,7 @@ const Signup: React.FC<SignupProps> = () => {
           type="text"
           name="name"
           id="name"
-          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
+          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-gray-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
           placeholder="John Doe"
         />
       </div>
@@ -95,14 +98,14 @@ const Signup: React.FC<SignupProps> = () => {
           type="password"
           name="password"
           id="password"
-          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
+          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-gray-500 block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
           placeholder="********"
         />
       </div>
 
       <button
         type="submit"
-        className="w-full text-white focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-500 hover:bg-blue-900"
+        className="w-full text-white focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-gray-500 hover:bg-gray-900"
       >
         {loading ? "Creating account..." : "Sign Up"}
       </button>
@@ -111,7 +114,7 @@ const Signup: React.FC<SignupProps> = () => {
         Already have an account?&nbsp;
         <a
           href="#"
-          className="text-blue-700 hover:underline"
+          className="text-gray-300 hover:underline"
           onClick={() => handleClick("login")}
         >
           Log In

@@ -20,7 +20,7 @@ const AuthModal: React.FC<AuthModalProps> = () => {
       {/* div for overlay */}
       <div className="w-full sm:w-[450px]  absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]  flex justify-center items-center">
         <div className="relative w-full h-full mx-auto flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow relative w-full bg-gradient-to-b from-blue-500 to-black mx-6">
+          <div className="bg-white rounded-lg shadow relative w-full bg-gradient-to-b from-gray-500 to-black mx-6">
             <div className="flex justify-end p-2">
               <button
                 type="button"
