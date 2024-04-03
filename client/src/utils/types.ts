@@ -21,6 +21,8 @@ export type UserStruct = {
     email: string;
     name: string;
     doj: string;
+    is_beginner:boolean,
+    initial_problem_count:number,
     question_solved: string[];
     scores: [
         {

@@ -65,7 +65,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
         {showFeedback && <Feedback dataFromPG={dataFromPG}/>}
       </div>
 
-      <Playground questiondata={questiondata} sendDataToParent={handleDataFromPG} userIdFromProblem={userId}/>
+      <Playground questiondata={questiondata} sendDataToWS={handleDataFromPG} userIdFromProblem={userId}/>
     </Split>
   );
   
