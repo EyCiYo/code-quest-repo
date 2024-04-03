@@ -8,10 +8,9 @@ import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
-import OpenAi from "openai";
 import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
-import { get } from "http";
+import { toast } from "react-toastify";
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
@@ -24,8 +23,8 @@ type PlaygroundProps = {
 };
 
 
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,userIdFromProblem}) => {
-	//console.log(questiondata);
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
+	//console.log(userIdFromProblem);
 
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -65,7 +64,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 	const isBeginner = async (userId:string) =>{
 		try{
 			console.log("inside isBeginner function")
-			let userInfo= await getUserData(userId);
+			let userInfo = await getUserData(userId);
 			if(userInfo){
 				return userInfo.is_beginner;  // initially true
 			}else{
@@ -120,48 +119,77 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		setSourceCode(newBoilerPlate);
 	}, [selectedLanguage]);
 
-	const loadSubmitButton = async ()=>{
+	useEffect(() => {
+		loadSubmitButton();
+	}, [userIdFromProblem]);
+
+	const loadSubmitButton = async () => {
 		let beginner = await isBeginner(userIdFromProblem);
 		// beginner=false;
 		console.log("beginner value is",beginner);
 		setBeginnerValue(beginner);
 	}
-	loadSubmitButton();
-	const handleRunButtonClick = async (questiondata:DBProblem|null) => {
 
-	const getLanguageId = async (lang : string) => {
-		const url = 'https://judge0-ce.p.rapidapi.com/languages';
+	const handleStatusID = async (status_id: number) => {
+		const url = 'https://judge0-ce.p.rapidapi.com/statuses';
 		const options = {
 			method: 'GET',
 			headers: {
-				'X-RapidAPI-Key': String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
+				'X-RapidAPI-Key': '8934217676msh2bd9a679b7e581cp1721f4jsnaea969da37df',
 				'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
 			}
 		};
-		const reqLang = lang === 'python' ? 'Python (3.8.1)' : 'C++ (GCC 8.3.0)';
+		
 		try {
 			const response = await fetch(url, options);
 			const result = await response.json();
 			for(var i=0;i<result.length;i++){
-				if(result[i].name === reqLang){
-					console.log(result[i].id);
-					return result[i].id as Number;
+				if(result[i].id === status_id){
+					console.log(result[i].description);
+					toast.info(result[i].description, {
+						theme: "dark",
+						position: "top-center",
+						autoClose: 3000,
+					});
 				}
 			}
 		} catch (error) {
 			console.error(error);
 		}
 	}
-		// Perform actions with sourceCode, e.g., send API request
+	const handleRunButtonClick = async (questiondata:DBProblem|null) => {
 
-		
+		const getLanguageId = async (lang : string) => {				//get langugae id corresponding to the language selected
+			const url = 'https://judge0-ce.p.rapidapi.com/languages';
+			const options = {
+				method: 'GET',
+				headers: {
+					'X-RapidAPI-Key': String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
+					'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
+				}
+			};
+			const reqLang = lang === 'python' ? 'Python (3.8.1)' : 'C++ (GCC 8.3.0)';
+			try {
+				const response = await fetch(url, options);
+				const result = await response.json();
+				for(var i=0;i<result.length;i++){
+					if(result[i].name === reqLang){
+						console.log(result[i].id);
+						return result[i].id as Number;
+					}
+				}
+			} catch (error) {
+				console.error(error);
+			}
+		}
+		// Perform actions with sourceCode, e.g., send API request
 
 		if(questiondata==null){
 			return
 		}
 		const showTestcaseScore = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
 		if(!showTestcaseScore){
-			console.log("question already solved.");
+			console.log("Question already solved.");
 			return;
 		}
 		let testcases=0;
@@ -213,6 +241,15 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		});
 
 		const statusData = await statusResponse.json();
+		handleStatusID(statusData.status_id)
+		if(statusData.stderr){
+			toast.error(atob(statusData.stderr), {
+				theme: "dark",
+				position: "top-center",
+				autoClose: 3000,
+			});
+			throw new Error("Error in code");
+		}
 		const result = atob(statusData.stdout);
 		console.log(statusData);
 		const resultArray = result.split("-");
@@ -233,7 +270,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToParent,us
 		showTestcaseScore && beginnerValue ? setInitialScore(questiondata,userIdFromProblem,testcases) : console.log("question already solved") ;
 		alert(strRes);
 		} catch (error) {
-		console.error(error);
+			console.error(error);
 		}
 	};
 
