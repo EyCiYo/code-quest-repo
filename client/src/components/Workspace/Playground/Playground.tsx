@@ -354,33 +354,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 
 		req.write(postData);
 
-
-		// let pointsData = JSON.stringify({
-		// 	messages: [
-		// 		{
-		// 		content:
-		// 			"Evaluate this code and give a score out of 10.",
-		// 		role: "system",
-		// 		},
-		// 		{
-		// 		content: sourceCode,
-		// 		role: "user",
-		// 		},
-		// 	],
-		// 	model: "deepseek-chat",
-		// 	frequency_penalty: 0,
-		// 	max_tokens: 2048,
-		// 	presence_penalty: 0,
-		// 	stop: null,
-		// 	stream: false,
-		// 	temperature: 0.2,
-		// 	top_p: 1,
-		// 	});
-	
-		// req.write(pointsData);
-
 		req.end();
-		// setScoreOnSubmit(questiondata);
 	};
 	
 	return (
@@ -451,7 +425,6 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		</Split>
 		<EditorFooter
 			onRunButtonClick={() => handleRunButtonClick(questiondata)}
-			// onSubmitButtonClick={handleSubmitButtonClick}
 			onSubmitButtonClick={() => handleSubmitButtonClick(questiondata)}
 			isBeginner = {beginnerValue}
 		/>
