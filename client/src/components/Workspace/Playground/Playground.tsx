@@ -10,6 +10,8 @@ import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
 import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
+import { get } from "http";
+import { getAuth } from "firebase/auth";
 import { toast } from "react-toastify";
 
 // interface Props {
@@ -24,7 +26,7 @@ type PlaygroundProps = {
 
 
 const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
-	//console.log(userIdFromProblem);
+
 
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -53,6 +55,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
 	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
 
+	// const auth = getAuth(app);
 	const getScore = (feedback: string) =>{
 		const last = '/10';
 		const indexLast = feedback.indexOf(last);
@@ -63,12 +66,15 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 
 	const isBeginner = async (userId:string) =>{
 		try{
-			console.log("inside isBeginner function")
+			// console.log("inside isBeginner function")
 			let userInfo = await getUserData(userId);
+			// console.log(userInfo);
+
 			if(userInfo){
+				console.log("got user data through isBeginner");
 				return userInfo.is_beginner;  // initially true
 			}else{
-				console.log("could not get user data");
+				console.log("could not get user data through isBeginner");
 				return true;
 			}
 		}catch (error) {
@@ -81,6 +87,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		try{
 			let userInfo= await getUserData(userId);
 			if(userInfo){
+
 				let solvedQuestions = userInfo.question_solved;
 				return solvedQuestions.includes(questionId);
 			}else{
@@ -126,9 +133,10 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 	const loadSubmitButton = async () => {
 		let beginner = await isBeginner(userIdFromProblem);
 		// beginner=false;
-		console.log("beginner value is",beginner);
+		// console.log("beginner value is",beginner);
 		setBeginnerValue(beginner);
 	}
+
 
 	const handleStatusID = async (status_id: number) => {
 		const url = 'https://judge0-ce.p.rapidapi.com/statuses';
@@ -158,6 +166,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		}
 	}
 	const handleRunButtonClick = async (questiondata:DBProblem|null) => {
+
 
 		const getLanguageId = async (lang : string) => {				//get langugae id corresponding to the language selected
 			const url = 'https://judge0-ce.p.rapidapi.com/languages';
@@ -195,7 +204,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		let testcases=0;
 		try {
 		const url =
-			"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
+		"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
 		const code =
 			selectedLanguage === "python"
 			? sourceCode + driver
@@ -239,7 +248,6 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			"X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
 			},
 		});
-
 		const statusData = await statusResponse.json();
 		handleStatusID(statusData.status_id)
 		if(statusData.stderr){
@@ -251,7 +259,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			throw new Error("Error in code");
 		}
 		const result = atob(statusData.stdout);
-		console.log(statusData);
+		console.log("statusData is ",statusData);
 		const resultArray = result.split("-");
 		const passArray = resultArray.filter(
 			(testCase) => testCase === "1" || testCase === "0"
@@ -267,7 +275,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 				strRes += `Test case ${index + 1} failed` + "\n";
 			}
 		});
-		showTestcaseScore && beginnerValue ? setInitialScore(questiondata,userIdFromProblem,testcases) : console.log("question already solved") ;
+		showTestcaseScore && beginnerValue ? setInitialScore(questiondata,userIdFromProblem,testcases) : console.log("not calling setInitialScore") ;
 		alert(strRes);
 		} catch (error) {
 			console.error(error);

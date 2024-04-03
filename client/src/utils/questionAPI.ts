@@ -7,7 +7,7 @@ export async function getQuestionData(questionId: string) {
     const docRef = doc(firestore, 'questions', questionId);
     const docSnap = await getDoc(docRef);
     const questionData: DBProblem = docSnap.data() as DBProblem;
-    console.log('Question data:', questionData);
+    //console.log('Question data:', questionData);
     return questionData;
   } catch (error) {
     console.error('Error getting question data:', error);
