@@ -41,23 +41,23 @@ function convertToScoresObject(keyValueArray) {
 
     for (var i = 0; i < keyValueArray.length; i++) {
         var pair = keyValueArray[i];
-        arrayOfScores[pair.name] = pair.score;
+        arrayOfScores[pair.name.toLowerCase()] = pair.score;
     }
 
     return arrayOfScores;
 }
 function convertToScoresArray(scoresObject) {
     var keyValueArray = [];
-    for (var key in scoresObject) {
-        if (scoresObject.hasOwnProperty(key)) {
+    for (var key in scoresObject)  {
             keyValueArray.push({ score: scoresObject[key], name: key });
         }
-    }
-
+        return keyValueArray;
 }
+
 export async function setInitialScore(questionData,userId,testcases){
     console.log("inside setInitialScore");
     try{
+        console.log("no. of testcases passed are",testcases);
         let userInfo= await getUserData(userId);
         if(userInfo){
             let solvedQuestions=userInfo.question_solved;
@@ -72,10 +72,12 @@ export async function setInitialScore(questionData,userId,testcases){
             userScoresAll=convertToScoresArray(scoresObject) // to be updated on database
             solvedQuestions.push(questionData.id);  // to be updated on database
             initialProblemCount++; // to be updated on database
+            
             if(initialProblemCount==totalInitialProblems){
                 let beginner = false;
                 // update database
             }
+            
         }else{
             console.log("could not get user data at model.js");
         }
@@ -115,8 +117,9 @@ export async function setScoreOnSubmit(questionData,userId,userScore) {
 // initialScores using no. of testcases passed 
 function intialScores(scoresArray,topicList,testcases,difficultyLevel){
     const totalTestCases=10;
+    console.log("topicList is ",topicList);
     topicList.forEach((topic)=>{
-        scoresArray[topic]=Math.round(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases))
+        scoresArray[topic]=Math.ceil(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases)*10)
     });
     return scoresArray;
 }
