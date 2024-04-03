@@ -3,16 +3,16 @@ import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
-import { python } from "@codemirror/lang-python";
+import { python } from "@codemirror/lang-python"
 import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
-import OpenAi from "openai";
 import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
-import { get } from "http";
-import { getAuth } from "firebase/auth";
+// import { get } from "http";
+// import { getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
@@ -26,7 +26,6 @@ type PlaygroundProps = {
 
 
 const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
-	//console.log(questiondata);
 
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -38,6 +37,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
     	atob(questiondata?.driver_py as string)
   	);
 	const [beginnerValue, setBeginnerValue] = useState(true);
+	const [testcases,setTestcases] = useState(0);
 	const header = `
 	#include <iostream>
 	#include <vector>
@@ -69,6 +69,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			// console.log("inside isBeginner function")
 			let userInfo = await getUserData(userId);
 			// console.log(userInfo);
+
 			if(userInfo){
 				console.log("got user data through isBeginner");
 				return userInfo.is_beginner;  // initially true
@@ -125,51 +126,80 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		setSourceCode(newBoilerPlate);
 	}, [selectedLanguage]);
 
-	const loadSubmitButton = async ()=>{
+	useEffect(() => {
+		loadSubmitButton();
+	}, [userIdFromProblem]);
+
+	const loadSubmitButton = async () => {
 		let beginner = await isBeginner(userIdFromProblem);
 		// beginner=false;
 		// console.log("beginner value is",beginner);
 		setBeginnerValue(beginner);
 	}
 
-	loadSubmitButton();
-	
-	const getLanguageId = async (lang : string) => {
-		const url = 'https://judge0-ce.p.rapidapi.com/languages';
+
+	const handleStatusID = async (status_id: number) => {
+		const url = 'https://judge0-ce.p.rapidapi.com/statuses';
 		const options = {
 			method: 'GET',
 			headers: {
-				'X-RapidAPI-Key': String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
+				'X-RapidAPI-Key': '8934217676msh2bd9a679b7e581cp1721f4jsnaea969da37df',
 				'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
 			}
 		};
-		const reqLang = lang === 'python' ? 'Python (3.8.1)' : 'C++ (GCC 8.3.0)';
+		
 		try {
 			const response = await fetch(url, options);
 			const result = await response.json();
 			for(var i=0;i<result.length;i++){
-				if(result[i].name === reqLang){
-					console.log(result[i].id);
-					return result[i].id as Number;
+				if(result[i].id === status_id){
+					console.log(result[i].description);
+					toast.info(result[i].description, {
+						theme: "dark",
+						position: "top-center",
+						autoClose: 3000,
+					});
 				}
 			}
 		} catch (error) {
 			console.error(error);
 		}
 	}
+
+	const handleRunButtonClick = async (questiondata:DBProblem|null) => {
+		const getLanguageId = async (lang : string) => {				//get langugae id corresponding to the language selected
+			const url = 'https://judge0-ce.p.rapidapi.com/languages';
+			const options = {
+				method: 'GET',
+				headers: {
+					'X-RapidAPI-Key': String(process.env.NEXT_PUBLIC_JUDGE0_API_KEY),
+					'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
+				}
+			};
+			const reqLang = lang === 'python' ? 'Python (3.8.1)' : 'C++ (GCC 8.3.0)';
+			try {
+				const response = await fetch(url, options);
+				const result = await response.json();
+				for(var i=0;i<result.length;i++){
+					if(result[i].name === reqLang){
+						console.log(result[i].id);
+						return result[i].id as Number;
+					}
+				}
+			} catch (error) {
+				console.error(error);
+			}
+		}
 		// Perform actions with sourceCode, e.g., send API request
 
-		const handleRunButtonClick = async (questiondata:DBProblem|null) => {
-
 		if(questiondata==null){
-			return
+			return;
 		}
 		const showTestcaseScore = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
 		if(!showTestcaseScore){
-			console.log("question already solved.");
+			console.log("Question already solved.");
 			return;
 		}
-		let testcases=0;
 		try {
 		const url =
 		"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
@@ -217,6 +247,15 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			},
 		});
 		const statusData = await statusResponse.json();
+		handleStatusID(statusData.status_id)
+		if(statusData.stderr){
+			toast.error(atob(statusData.stderr), {
+				theme: "dark",
+				position: "top-center",
+				autoClose: 3000,
+			});
+			throw new Error("Error in code");
+		}
 		const result = atob(statusData.stdout);
 		console.log("statusData is ",statusData);
 		const resultArray = result.split("-");
@@ -225,7 +264,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		);
 		console.log("testcase array is ",passArray);
 		var strRes: string = "";
-		
+		let testcases=0;
 		passArray.forEach((testCase, index) => {
 			if (testCase === "1") {
 				testcases++;
@@ -234,16 +273,21 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 				strRes += `Test case ${index + 1} failed` + "\n";
 			}
 		});
+		setTestcases(testcases);
 		showTestcaseScore && beginnerValue ? setInitialScore(questiondata,userIdFromProblem,testcases) : console.log("not calling setInitialScore") ;
 		alert(strRes);
 		} catch (error) {
-		console.error(error);
+			console.error(error);
 		}
 	};
 
 	const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
 		console.log("Submit button clicked");
-		if(questiondata==null){
+		if(questiondata==null ){
+			return;
+		}
+		if(testcases==0){
+			console.log("click run button first to check test cases");
 			return;
 		}
 		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
