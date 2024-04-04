@@ -3,15 +3,15 @@ import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
-import { python } from "@codemirror/lang-python";
+import { python } from "@codemirror/lang-python"
 import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
 import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
-import { get } from "http";
-import { getAuth } from "firebase/auth";
+// import { get } from "http";
+// import { getAuth } from "firebase/auth";
 import { toast } from "react-toastify";
 
 // interface Props {
@@ -27,7 +27,6 @@ type PlaygroundProps = {
 
 const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
 
-
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
   	const [boilerPlate, setBoilerPlate] = useState<string>(
@@ -38,6 +37,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
     	atob(questiondata?.driver_py as string)
   	);
 	const [beginnerValue, setBeginnerValue] = useState(true);
+	const [testcases,setTestcases] = useState(0);
 	const header = `
 	#include <iostream>
 	#include <vector>
@@ -165,9 +165,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			console.error(error);
 		}
 	}
+
 	const handleRunButtonClick = async (questiondata:DBProblem|null) => {
-
-
 		const getLanguageId = async (lang : string) => {				//get langugae id corresponding to the language selected
 			const url = 'https://judge0-ce.p.rapidapi.com/languages';
 			const options = {
@@ -194,14 +193,13 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		// Perform actions with sourceCode, e.g., send API request
 
 		if(questiondata==null){
-			return
+			return;
 		}
 		const showTestcaseScore = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
 		if(!showTestcaseScore){
 			console.log("Question already solved.");
 			return;
 		}
-		let testcases=0;
 		try {
 		const url =
 		"https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true&fields=*";
@@ -266,7 +264,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		);
 		console.log("testcase array is ",passArray);
 		var strRes: string = "";
-		
+		let testcases=0;
 		passArray.forEach((testCase, index) => {
 			if (testCase === "1") {
 				testcases++;
@@ -275,6 +273,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 				strRes += `Test case ${index + 1} failed` + "\n";
 			}
 		});
+		setTestcases(testcases);
 		showTestcaseScore && beginnerValue ? setInitialScore(questiondata,userIdFromProblem,testcases) : console.log("not calling setInitialScore") ;
 		alert(strRes);
 		} catch (error) {
@@ -284,7 +283,11 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 
 	const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
 		console.log("Submit button clicked");
-		if(questiondata==null){
+		if(questiondata==null ){
+			return;
+		}
+		if(testcases==0){
+			console.log("click run button first to check test cases");
 			return;
 		}
 		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
@@ -351,33 +354,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 
 		req.write(postData);
 
-
-		// let pointsData = JSON.stringify({
-		// 	messages: [
-		// 		{
-		// 		content:
-		// 			"Evaluate this code and give a score out of 10.",
-		// 		role: "system",
-		// 		},
-		// 		{
-		// 		content: sourceCode,
-		// 		role: "user",
-		// 		},
-		// 	],
-		// 	model: "deepseek-chat",
-		// 	frequency_penalty: 0,
-		// 	max_tokens: 2048,
-		// 	presence_penalty: 0,
-		// 	stop: null,
-		// 	stream: false,
-		// 	temperature: 0.2,
-		// 	top_p: 1,
-		// 	});
-	
-		// req.write(pointsData);
-
 		req.end();
-		// setScoreOnSubmit(questiondata);
 	};
 	
 	return (
@@ -448,7 +425,6 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		</Split>
 		<EditorFooter
 			onRunButtonClick={() => handleRunButtonClick(questiondata)}
-			// onSubmitButtonClick={handleSubmitButtonClick}
 			onSubmitButtonClick={() => handleSubmitButtonClick(questiondata)}
 			isBeginner = {beginnerValue}
 		/>
