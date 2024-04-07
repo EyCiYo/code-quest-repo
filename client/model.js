@@ -135,6 +135,7 @@ function updateScores(scoresArray,score,topicList,difficultyLevel) {
         const topicScoreIncrease = score * topicWeight[topic] * difficultyWeight[difficultyLevel];
         scoresArray[topic] = Math.round(scoresArray[topic]+ topicScoreIncrease * getLearningRate(scoresArray[topic]) * 1);
     }) ;
+    console.log('score updated:',scoresArray)
     return scoresArray;
 }
 
