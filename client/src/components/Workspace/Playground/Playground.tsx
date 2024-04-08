@@ -8,7 +8,8 @@ import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
-import { setInitialScore, setScoreOnSubmit } from "../../../../model.js";
+import { setInitialScore, setScoreOnSubmit, getTestCaseScore} from '../../../../model.js';
+
 import { getUserData } from "@/utils/userDataFetch";
 // import { get } from "http";
 // import { getAuth } from "firebase/auth";
@@ -24,24 +25,27 @@ type PlaygroundProps = {
   userIdFromProblem: string;
 };
 
-const Playground: React.FC<PlaygroundProps> = ({
-  questiondata,
-  sendDataToWS,
-  userIdFromProblem,
-}) => {
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
-  const displayTestCases = questiondata?.testcases.slice(0, 2);
-  const [boilerPlate, setBoilerPlate] = useState<string>(
-    atob(questiondata?.boilerplate_py as string)
-  );
 
-  const [driver, setDriver] = useState<string>(
-    atob(questiondata?.driver_py as string)
-  );
-  const [beginnerValue, setBeginnerValue] = useState(true);
-  const [testcases, setTestcases] = useState(0);
-  const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
-  const header = `
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
+
+  	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
+	const displayTestCases = questiondata?.testcases.slice(0, 2);
+  	const [boilerPlate, setBoilerPlate] = useState<string>(
+    	atob(questiondata?.boilerplate_py as string)
+  	);
+
+  	const [driver, setDriver] = useState<string>(
+    	atob(questiondata?.driver_py as string)
+  	);
+	const [beginnerValue, setBeginnerValue] = useState(true);
+	const [testcases,setTestcases] = useState(0);
+	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
+	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
+   const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
+	const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
+	// const [attempts,setAttempts] = useState(0);
+
+	const header = `
 	#include <iostream>
 	#include <vector>
 	#include <string>
@@ -54,9 +58,6 @@ const Playground: React.FC<PlaygroundProps> = ({
 	#include <utility>
 	using namespace std;
 	`;
-
-  const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
-  const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
 
   // const auth = getAuth(app);
   const getScore = (feedback: string) => {
@@ -286,6 +287,7 @@ const Playground: React.FC<PlaygroundProps> = ({
       });
       setFailedTestCaseIdx(failedIdx);
       setTestcases(testcases);
+      setTestCaseArray([...testCaseArray, testcases]);
       showTestcaseScore && beginnerValue
         ? setInitialScore(questiondata, userIdFromProblem, testcases)
         : console.log("not calling setInitialScore");
@@ -312,6 +314,7 @@ const Playground: React.FC<PlaygroundProps> = ({
       console.log("question already solved.");
       return;
     }
+    const testCaseScore = getTestCaseScore(testCaseArray);
     const options: RequestOptions = {
       method: "POST",
       hostname: "api.deepseek.com",
@@ -337,13 +340,7 @@ const Playground: React.FC<PlaygroundProps> = ({
         // console.log(content)
         let feedbackResponse = content.choices[0].message.content;
         sendDataToWS(feedbackResponse);
-        showFeedback
-          ? setScoreOnSubmit(
-              questiondata,
-              userIdFromProblem,
-              getScore(feedbackResponse)
-            )
-          : console.log("question already solved");
+        showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse),testCaseScore): console.log("question already solved");
       });
 
       res.on("error", (error) => {
@@ -485,5 +482,6 @@ const Playground: React.FC<PlaygroundProps> = ({
       />
     </div>
   );
+
 };
 export default Playground;
