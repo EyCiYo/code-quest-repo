@@ -9,11 +9,11 @@ import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
 import { setInitialScore, setScoreOnSubmit, getTestCaseScore} from '../../../../model.js';
-
 import { getUserData } from "@/utils/userDataFetch";
+import { toast } from "react-toastify";
 // import { get } from "http";
 // import { getAuth } from "firebase/auth";
-import { toast } from "react-toastify";
+
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
@@ -28,22 +28,23 @@ type PlaygroundProps = {
 
 const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
 
-  	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
-  	const [boilerPlate, setBoilerPlate] = useState<string>(
-    	atob(questiondata?.boilerplate_py as string)
-  	);
-
-  	const [driver, setDriver] = useState<string>(
-    	atob(questiondata?.driver_py as string)
-  	);
+  const [boilerPlate, setBoilerPlate] = useState<string>(
+  	atob(questiondata?.boilerplate_py as string)
+  ); 
+  const [driver, setDriver] = useState<string>(
+  	atob(questiondata?.driver_py as string)
+  );
 	const [beginnerValue, setBeginnerValue] = useState(true);
 	const [testcases,setTestcases] = useState(0);
 	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
 	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
-   const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
+  const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
 	const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
+  const [totalTestCases, setTotalTestCases] = useState<number>(0);
 	// const [attempts,setAttempts] = useState(0);
+  // let totalNumberOfTestcases=0;
 
 	const header = `
 	#include <iostream>
@@ -269,6 +270,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
         (testCase) => testCase === "1" || testCase === "0"
       );
       console.log("testcase array is ", passArray);
+      // totalNumberOfTestcases=passArray.length;
+      setTotalTestCases(passArray.length);
       var strRes: string = "";
       let testcases = 0;
       let failedIdx = -1;
@@ -287,6 +290,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       });
       setFailedTestCaseIdx(failedIdx);
       setTestcases(testcases);
+      console.log("adding the testcase to testcase array");
       setTestCaseArray([...testCaseArray, testcases]);
       showTestcaseScore && beginnerValue
         ? setInitialScore(questiondata, userIdFromProblem, testcases)
@@ -314,7 +318,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       console.log("question already solved.");
       return;
     }
-    const testCaseScore = getTestCaseScore(testCaseArray);
+    const testCaseScore = getTestCaseScore(testCaseArray,totalTestCases);
+    console.log(`testCaseScore is ${testCaseScore}`);
     const options: RequestOptions = {
       method: "POST",
       hostname: "api.deepseek.com",

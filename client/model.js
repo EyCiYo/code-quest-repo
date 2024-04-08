@@ -148,11 +148,11 @@ function updateScores(scoresArray,feedbackScore,testcaseScore,topicList,difficul
     return scoresArray;
 }
 
-export function getTestCaseScore(array){
+export function getTestCaseScore(array,totalTestCases){
     console.log(`testcaseArray inside model is ${array}`);
     let score=0;
     const attempts=array.length;
-    const totalTestCases = 7;
+    // const totalTestCases = 8; // update for each problem
     for(let i=0;i<attempts;i++){
         if(i==0){
           score+=array[i];
@@ -161,8 +161,13 @@ export function getTestCaseScore(array){
       }
     }
     let tentativeScore = Math.round(score*10/Math.exp(0.4 * attempts));
+    // console.log(`tentativeScore is ${tentativeScore}`);
     const maximumScore = Math.round(totalTestCases*10/Math.exp(0.4));
-    return tentativeScore*totalTestCases/maximumScore;
+    // console.log(`maximumScore is ${maximumScore}`);
+    const scoreForTests = Math.round(tentativeScore*totalTestCases/maximumScore);
+    // console.log(`scoreForTest is ${scoreForTests}`);
+    const scoreIn10 = (scoreForTests/totalTestCases)*10;
+    return scoreIn10;
 }
 
 function getRecommendQuestions(scoresArray){
