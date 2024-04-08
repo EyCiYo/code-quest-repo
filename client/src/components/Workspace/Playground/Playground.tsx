@@ -9,6 +9,7 @@ import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
 import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
+import { getTestCaseScore } from "../../../../model.js";
 import { getUserData } from "@/utils/userDataFetch";
 // import { get } from "http";
 // import { getAuth } from "firebase/auth";
@@ -38,6 +39,11 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
   	);
 	const [beginnerValue, setBeginnerValue] = useState(true);
 	const [testcases,setTestcases] = useState(0);
+	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
+	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
+	const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
+	// const [attempts,setAttempts] = useState(0);
+
 	const header = `
 	#include <iostream>
 	#include <vector>
@@ -52,8 +58,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 	using namespace std;
 	`;
 
-	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
-	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
+	
 
 	// const auth = getAuth(app);
 	const getScore = (feedback: string) =>{
@@ -274,6 +279,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			}
 		});
 		setTestcases(testcases);
+		setTestCaseArray([...testCaseArray, testcases]);
+		console.log(`testcaseArray is ${testCaseArray}`);
 		showTestcaseScore && beginnerValue ? setInitialScore(questiondata,userIdFromProblem,testcases) : console.log("not calling setInitialScore") ;
 		alert(strRes);
 		} catch (error) {
@@ -295,6 +302,8 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			console.log("question already solved.");
 			return;
 		}
+		const testCaseScore = getTestCaseScore(testCaseArray);
+		console.log(`testCaseScore is ${testCaseScore}`);
 		const options: RequestOptions = {
 		method: "POST",
 		hostname: "api.deepseek.com",
@@ -321,7 +330,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			// console.log(content)
 			let feedbackResponse = content.choices[0].message.content;
 			sendDataToWS(feedbackResponse);
-			showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
+			showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse),testCaseScore): console.log("question already solved");
 		});
 
 		res.on("error", (error) => {

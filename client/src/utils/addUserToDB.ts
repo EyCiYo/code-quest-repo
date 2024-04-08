@@ -15,17 +15,29 @@ export async function addUserToDB(email: string, name: string, userid: string) {
                 initial_problem_count:0,
                 scores: [
                     {
-                        name: "Array",
+                        name: "array",
                         score: 0,
                     },
                     {
-                        name: "Dynamic Programming",
+                        name: "string",
                         score: 0,
                     },
                     {
-                        name: "Binary Search",
+                        name: "math",
                         score: 0,
-                    }
+                    },
+                    {
+                        name: "dynamic programming",
+                        score: 0,
+                    },
+                    {
+                        name: "binary search",
+                        score: 0,
+                    },
+                    {
+                        name: "hash table",
+                        score: 0,
+                    },
                 ]
             });
             console.log("User added to database successfully");
