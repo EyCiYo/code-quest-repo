@@ -144,6 +144,7 @@ function updateScores(scoresArray,feedbackScore,testcaseScore,topicList,difficul
       	const scoreRate = getScoreRate(scoresArray[topic]);
         scoresArray[topic] = Math.round(scoresArray[topic]+ topicScoreIncrease * scoreRate );
     });
+
     return scoresArray;
 }
 
