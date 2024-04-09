@@ -11,6 +11,8 @@ import https, { RequestOptions } from "https";
 import { setInitialScore, setScoreOnSubmit } from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
 import { toast } from "react-toastify";
+import axios, { AxiosResponse } from 'axios';
+import { Writable } from 'stream';
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
@@ -20,11 +22,11 @@ type PlaygroundProps = {
 	questiondata: DBProblem | null;
 	sendDataToWS: (data: string) => void;
 	userIdFromProblem: string;
+	toggleFeedback: () => void;
 };
 
 
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
-	//console.log(userIdFromProblem);
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem,toggleFeedback}) => {
 
   	const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -52,7 +54,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 
 	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
 	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
-
+	const codeMirrorExtensions = [EditorView.lineWrapping,selectedLanguage == 'python' ? python() : cpp()];
 	const getScore = (feedback: string) =>{
 		const last = '/10';
 		const indexLast = feedback.indexOf(last);
@@ -102,6 +104,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 	const handleCppClick = () => {
 		setSelectedLanguage("cpp");
 	};
+	console.log(codeMirrorExtensions);
 	useEffect(() => {
 		let newBoilerPlate;
 		let newDriver;
@@ -274,6 +277,20 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		}
 	};
 
+	const handleSubmit = async (questiondata:DBProblem|null) => {
+		console.log("New Submit Logic");
+		if (questiondata === null) {
+			return;
+		}
+		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
+		if(!showFeedback){
+			console.log("question already solved.");
+			return;
+		}
+		sendDataToWS(sourceCode);
+		toggleFeedback();
+	}
+
 	const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
 		console.log("Submit button clicked");
 		if(questiondata==null){
@@ -284,39 +301,40 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			console.log("question already solved.");
 			return;
 		}
-		const options: RequestOptions = {
-		method: "POST",
-		hostname: "api.deepseek.com",
-		path: "/v1/chat/completions",
-		headers: {
-			"Content-Type": "application/json",
-			Accept: "application/json",
-			Authorization:
-			"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
-		},
-		};
-		const req = https.request(options, (res) => {
-		let chunks: Buffer[] = [];
-
-		res.on("data", (chunk: Buffer) => {
-			chunks.push(chunk);
-		});
 		
-		res.on("end", () => {
-			
-			let body = Buffer.concat(chunks);
-			let content = JSON.parse(body.toString());
-			//console.log(body);
-			// console.log(content)
-			let feedbackResponse = content.choices[0].message.content;
-			sendDataToWS(feedbackResponse);
-			showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
-		});
+		// const options: RequestOptions = {
+		// method: "POST",
+		// hostname: "api.deepseek.com",
+		// path: "/v1/chat/completions",
+		// headers: {
+		// 	"Content-Type": "application/json",
+		// 	Accept: "application/json",
+		// 	Authorization:
+		// 	"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
+		// },
+		// };
+		// const req = https.request(options, (res) => {
+		// let chunks: Buffer[] = [];
 
-		res.on("error", (error) => {
-			console.error(error);
-		});
-		});
+		// res.on("data", (chunk: Buffer) => {
+		// 	chunks.push(chunk);
+		// });
+		
+		// res.on("end", () => {
+			
+		// 	let body = Buffer.concat(chunks);
+		// 	let content = JSON.parse(body.toString());
+		// 	//console.log(body);
+		// 	// console.log(content)
+		// 	let feedbackResponse = content.choices[0].message.content;
+		// 	sendDataToWS(feedbackResponse);
+		// 	showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
+		// });
+
+		// res.on("error", (error) => {
+		// 	console.error(error);
+		// });
+		// });
 
 		let postData = JSON.stringify({
 		messages: [
@@ -331,47 +349,44 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			role: "user",
 			},
 		],
-		model: "deepseek-chat",
+		model: "deepseek-coder",
 		frequency_penalty: 0,
 		max_tokens: 2048,
 		presence_penalty: 0,
 		stop: null,
-		stream: false,
+		stream: true,
 		temperature: 0.2,
 		top_p: 1,
 		});
 
-		req.write(postData);
+		// axios.post('https://api.deepseek.com/v1/chat/completions', postData, {
+		// 	headers: {
+		// 		'Content-Type': 'application/json',
+		// 		'Authorization': `Bearer ${process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY}`,
+		// 	},
+		// 	responseType: 'stream' // Enable streaming response
+		// })
+		// .then((response: AxiosResponse) => {
+		// 	response.data.pipe(new Writable({
+		// 		write(chunk, encoding, next) {
+		// 			const content = JSON.parse(chunk.toString());
+		// 			const feedbackResponse = content.choices[0].message.content;
+		// 			sendDataToWS(feedbackResponse);
+		// 			showFeedback ? setScoreOnSubmit(questiondata, userIdFromProblem, getScore(feedbackResponse)) : console.log("question already solved");
+		// 			next();
+		// 		}
+		// 	}));
+		// })
+		// .catch((error: Error) => {
+		// 	console.error(error);
+		// });
 
+		// req.write(postData);
 
-		// let pointsData = JSON.stringify({
-		// 	messages: [
-		// 		{
-		// 		content:
-		// 			"Evaluate this code and give a score out of 10.",
-		// 		role: "system",
-		// 		},
-		// 		{
-		// 		content: sourceCode,
-		// 		role: "user",
-		// 		},
-		// 	],
-		// 	model: "deepseek-chat",
-		// 	frequency_penalty: 0,
-		// 	max_tokens: 2048,
-		// 	presence_penalty: 0,
-		// 	stop: null,
-		// 	stream: false,
-		// 	temperature: 0.2,
-		// 	top_p: 1,
-		// 	});
-	
-		// req.write(pointsData);
-
-		req.end();
+		// req.end();
 		// setScoreOnSubmit(questiondata);
+
 	};
-	
 	return (
 		<div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">
 		<PreferenceNav
@@ -388,7 +403,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 			<CodeMirror
 				value={sourceCode}
 				theme={vscodeDark}
-				extensions={[cpp(), python(), EditorView.lineWrapping]}
+				extensions={codeMirrorExtensions}
 				style={{ fontSize: 16 }}
 				onChange={(value) => {
 				setSourceCode(value as string);
@@ -441,7 +456,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		<EditorFooter
 			onRunButtonClick={() => handleRunButtonClick(questiondata)}
 			// onSubmitButtonClick={handleSubmitButtonClick}
-			onSubmitButtonClick={() => handleSubmitButtonClick(questiondata)}
+			onSubmitButtonClick={() => handleSubmit(questiondata)}
 			isBeginner = {beginnerValue}
 		/>
 		</div>

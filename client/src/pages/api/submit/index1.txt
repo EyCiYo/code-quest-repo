@@ -1,0 +1,148 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+import https from 'https';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const { sourceCode } = req.query;
+
+    // Validate and process the query parameters as needed
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const options: https.RequestOptions = {
+        method: "POST",
+        hostname: "api.deepseek.com",
+        path: "/v1/chat/completions",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: "Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
+        },
+    };
+
+    const request = https.request(options, (response) => {
+        response.on('data', (chunk) => {
+            res.write(`data: ${chunk.toString()}\n\n`);
+        });
+        response.on('end', () => {
+            res.end();
+        });
+    });
+
+    request.on('error', (error) => {
+        console.error(error);
+        res.end();
+    });
+
+    request.write(JSON.stringify({
+        messages: [
+            // {
+            //     content:
+            //         "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.Evaluate this code and at the end of your feedback in the next line give a score out of 10 in the format 'Score is 6/10' and there should not be anything after the score.",
+            //     role: "system",
+            // },
+            {
+                content: "Tell me about multithreading in less than 20 words", // Use sourceCode from query parameters
+                role: "user",
+            },
+        ],
+        model: "deepseek-coder",
+        frequency_penalty: 0,
+        max_tokens: 2048,
+        presence_penalty: 0,
+        stop: null,
+        stream: true,
+        temperature: 0.2,
+        top_p: 1,
+    }));
+
+    request.end();
+}
+
+
+
+//feedback
+
+import { DBProblem } from "@/utils/types";
+import { getNamedMiddlewareRegex } from "next/dist/shared/lib/router/utils/route-regex";
+import React, { useEffect, useState } from "react";
+
+type FeedbackProps = {
+    dataFromPG: string;
+    questiondata: DBProblem | null;
+};
+
+const Feedback: React.FC<FeedbackProps> = ({ dataFromPG, questiondata }) => {
+    const [lines, setLines] = useState<string[]>([]);
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
+    const sourceCode = dataFromPG;
+    useEffect(() => {
+        const allLines = sourceCode.split('\n').map(line => line.trim());
+        setLines(allLines);
+        setCurrentIndex(0);
+
+        const url = new URL('/api/submit', window.location.origin);
+        url.searchParams.append('sourceCode', sourceCode);
+
+        const source = new EventSource(url.toString());
+
+        source.onmessage = function(event) {
+            const respData = event.data;
+            const realData:string = respData.replace(/data: /g, '');
+            const newData = JSON.parse(realData);
+            console.log(newData);
+            if (newData.choices && newData.choices.length > 0 && newData.choices[0].delta && newData.choices[0].delta.content) {
+                const content = newData.choices[0].delta.content.trim();
+                if (content !== '') {
+                    setLines(prevLines => prevLines + content);
+                }
+                console.log(lines);
+            }
+            if (newData.finish_reason === 'stop') {
+                source.close(); // Close the EventSource connection
+            }
+        };
+
+        source.onerror = function(error) {
+            console.error('EventSource failed:', error);
+        };
+
+        return () => {
+            source.close(); // Clean up event source on unmount
+        };
+    }, [sourceCode]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex(prevIndex => {
+                if (prevIndex < lines.length - 1) {
+                    return prevIndex + 1;
+                } else {
+                    clearInterval(interval);
+                    return prevIndex;
+                }
+            });
+        }, 100); // Adjust the interval duration as needed
+
+        return () => clearInterval(interval);
+    }, [lines]);
+
+    return (
+        <div className="bg-dark-layer-1">
+            {/* Other JSX elements */}
+            <div className="flex px-0 py-4 h-[calc(100vh-94px)] overflow-y-auto">
+                <div className="px-5">
+                    <div className="w-full text-white">
+                        {lines.slice(0, currentIndex + 1).map((line, index) => (
+                            <p key={index}>{line}</p>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Feedback;
+
