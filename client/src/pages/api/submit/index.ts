@@ -2,10 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAIStream, StreamingTextResponse,streamToResponse } from 'ai';
 import OpenAI from 'openai';
 
-export const config = {
-    runtime: "edge",
-};
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const systemPrompt = `Evaluation Criteria:
@@ -38,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             model:'deepseek-chat',
             messages:[
                 {"role": "system", "content": systemPrompt},
-                {"role": "user", "content": "tell me bout c++ in 20 words"},
+                {"role": "user", "content": content},
             ],
             frequency_penalty: 0,
             max_tokens: 2048,
@@ -54,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const stream = OpenAIStream(chatCompletion);
         console.log('Stream:',stream);
         // Respond with the stream
-        return new Response(stream);
+        return streamToResponse(stream, res);
         } 
         catch (error) {
             console.log('In api',error);

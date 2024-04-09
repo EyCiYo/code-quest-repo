@@ -43,6 +43,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
   const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
 	const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
   const [totalTestCases, setTotalTestCases] = useState<number>(0);
+  const codemirrorExtensions = [EditorView.lineWrapping, selectedLanguage === "python" ? python() : cpp()];
 	// const [attempts,setAttempts] = useState(0);
   // let totalNumberOfTestcases=0;
 
@@ -403,7 +404,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
           <CodeMirror
             value={sourceCode}
             theme={vscodeDark}
-            extensions={[cpp(), python(), EditorView.lineWrapping]}
+            extensions={codemirrorExtensions}
             style={{ fontSize: 16 }}
             onChange={(value) => {
               setSourceCode(value as string);
@@ -488,7 +489,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       </Split>
       <EditorFooter
         onRunButtonClick={() => handleRunButtonClick(questiondata)}
-        onSubmitButtonClick={() => handleSubmitButtonClick(questiondata)}
+        onSubmitButtonClick={() => handleSubmit(questiondata)}
         isBeginner={beginnerValue}
       />
     </div>
