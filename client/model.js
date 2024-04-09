@@ -1,5 +1,9 @@
 // scoresArray should be stored in the database for each user and is retrieved whenever the user the solves a problem 
 import { getUserData } from "@/utils/userDataFetch"
+import { updateQuestionsSolved } from "@/utils/updateQuestionsSolved";
+import { updateUserScore } from "@/utils/updateUserScore";
+import { updateBeginnerStatus } from "@/utils/updateBeginnerStatus";
+import { updateProblemCount } from "@/utils/updateProblemCount";
 
 // var scoresArray = {
 //     "array": 10,
@@ -41,40 +45,43 @@ function convertToScoresObject(keyValueArray) {
 
     for (var i = 0; i < keyValueArray.length; i++) {
         var pair = keyValueArray[i];
-        arrayOfScores[pair.name] = pair.score;
+        arrayOfScores[pair.name.toLowerCase()] = pair.score;
     }
 
     return arrayOfScores;
 }
 function convertToScoresArray(scoresObject) {
     var keyValueArray = [];
-    for (var key in scoresObject) {
-        if (scoresObject.hasOwnProperty(key)) {
+    for (var key in scoresObject)  {
             keyValueArray.push({ score: scoresObject[key], name: key });
         }
-    }
-
+        return keyValueArray;
 }
+
 export async function setInitialScore(questionData,userId,testcases){
     console.log("inside setInitialScore");
     try{
+        console.log("no. of testcases passed are",testcases);
         let userInfo= await getUserData(userId);
         if(userInfo){
-            let solvedQuestions=userInfo.question_solved;
+            // let solvedQuestions=userInfo.question_solved;
             let userScoresAll=userInfo.scores;
-            let initialProblemCount=userInfo.initial_problem_count; // add this new field for total no. of inital problem solved
+            let initialProblemCount=userInfo.initial_problem_count; 
             console.log('User data fetched at model.js:',userInfo);
             let scoresObject=convertToScoresObject(userScoresAll);
             let difficultyLevel=questionData.difficulty.toLowerCase();
             let topicList=questionData.topics.toLowerCase().split(",");
             scoresObject=intialScores(scoresObject,topicList,testcases,difficultyLevel);
 
-            userScoresAll=convertToScoresArray(scoresObject) // to be updated on database
-            solvedQuestions.push(questionData.id);  // to be updated on database
-            initialProblemCount++; // to be updated on database
+            userScoresAll=convertToScoresArray(scoresObject) 
+            await updateUserScore(userId,userScoresAll);
+            // solvedQuestions.push(questionData.id);  
+            await updateQuestionsSolved(userId,questionData.id);
+            // initialProblemCount++; 
+            await updateProblemCount(userId,++initialProblemCount);
             if(initialProblemCount==totalInitialProblems){
-                let beginner = false;
-                // update database
+                // let beginner = false;
+                await updateBeginnerStatus(userId);
             }
         }else{
             console.log("could not get user data at model.js");
@@ -84,7 +91,7 @@ export async function setInitialScore(questionData,userId,testcases){
     }
 }
 
-export async function setScoreOnSubmit(questionData,userId,userScore) {
+export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcaseScore) {
     console.log("inside setScoreOnSubmit");
     try{
         let userInfo= await getUserData(userId);
@@ -96,14 +103,14 @@ export async function setScoreOnSubmit(questionData,userId,userScore) {
             // console.log("inside the model.js file");
             let difficultyLevel=questionData.difficulty.toLowerCase();
             let topicList=questionData.topics.toLowerCase().split(",");
-            let score=userScore;
-            console.log(`score is ${score}`);
-            scoresObject=updateScores(scoresObject,score,topicList,difficultyLevel);
+            // let score=userScore;
+            // console.log(`score is ${score}`);
+            scoresObject=updateScores(scoresObject,feedbackScore,testcaseScore,topicList,difficultyLevel);
             let recommendQuestions=getRecommendQuestions(scoresObject);
 
-            userScoresAll=convertToScoresArray(scoresObject) // to be updated on database
-            solvedQuestions.push(questionData.id);  // to be updated on database
-            
+            userScoresAll=convertToScoresArray(scoresObject);
+            await updateUserScore(userId,userScoresAll);
+            await updateQuestionsSolved(userId,questionData.id);
         }else{
             console.log("could not get user data at model.js");
         }
@@ -115,24 +122,52 @@ export async function setScoreOnSubmit(questionData,userId,userScore) {
 // initialScores using no. of testcases passed 
 function intialScores(scoresArray,topicList,testcases,difficultyLevel){
     const totalTestCases=10;
+    console.log("topicList is ",topicList);
     topicList.forEach((topic)=>{
-        scoresArray[topic]=Math.round(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases))
+        scoresArray[topic]=Math.ceil(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases)*10)
     });
     return scoresArray;
 }
 
-function getLearningRate(score) {
+function getScoreRate(prevScore) {
     const k=0.7;  // k increases, change decreases
-    const checkpoint=50; // after 50, points gained decreases significantly
-    return 1 / (1 + Math.exp(k * (score - checkpoint)));
+    const checkpoint=80; // after 50, points gained decreases significantly
+    const attemptLimit=7; // after which insignificant change in score
+    // const attemptRate = attemptLimit/attempts; return = return * attemptRate
+    return  (1 / (1 + Math.exp(k * (prevScore - checkpoint))));
 }
 
-function updateScores(scoresArray,score,topicList,difficultyLevel) {
+function updateScores(scoresArray,feedbackScore,testcaseScore,topicList,difficultyLevel) {
     topicList.forEach((topic)=>{
-        const topicScoreIncrease = score * topicWeight[topic] * difficultyWeight[difficultyLevel];
-        scoresArray[topic] = Math.round(scoresArray[topic]+ topicScoreIncrease * getLearningRate(scoresArray[topic]) * 1);
-    }) ;
+        const avgScore = (feedbackScore+testcaseScore)/2;
+        const topicScoreIncrease = avgScore * topicWeight[topic] * difficultyWeight[difficultyLevel]; 
+      	const scoreRate = getScoreRate(scoresArray[topic]);
+        scoresArray[topic] = Math.round(scoresArray[topic]+ topicScoreIncrease * scoreRate );
+    });
+
     return scoresArray;
+}
+
+export function getTestCaseScore(array,totalTestCases){
+    console.log(`testcaseArray inside model is ${array}`);
+    let score=0;
+    const attempts=array.length;
+    // const totalTestCases = 8; // update for each problem
+    for(let i=0;i<attempts;i++){
+        if(i==0){
+          score+=array[i];
+      }else{
+        array[i]>=array[i-1] ? score+=array[i] : score-=array[i]*2;
+      }
+    }
+    let tentativeScore = Math.round(score*10/Math.exp(0.4 * attempts));
+    // console.log(`tentativeScore is ${tentativeScore}`);
+    const maximumScore = Math.round(totalTestCases*10/Math.exp(0.4));
+    // console.log(`maximumScore is ${maximumScore}`);
+    const scoreForTests = Math.round(tentativeScore*totalTestCases/maximumScore);
+    // console.log(`scoreForTest is ${scoreForTests}`);
+    const scoreIn10 = (scoreForTests/totalTestCases)*10;
+    return scoreIn10;
 }
 
 function getRecommendQuestions(scoresArray){
@@ -179,5 +214,4 @@ function getRecommendQuestions(scoresArray){
 //         console.log(keys[i],normalizedScores[i]);
 //      }
 //     //return normalizedScores;
-
 // }
