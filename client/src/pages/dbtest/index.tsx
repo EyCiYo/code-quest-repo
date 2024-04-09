@@ -41,6 +41,7 @@ const index:React.FC<indexProps> = () => {
     const handleUpdateScore = () => {
         updateUserScore(userid as string,newScore);
     }
+
     return(
         <>
             {!user && <Link

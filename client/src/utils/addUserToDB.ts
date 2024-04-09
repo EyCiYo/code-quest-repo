@@ -13,6 +13,7 @@ export async function addUserToDB(email: string, name: string, userid: string) {
                 is_beginner:true,
                 question_solved: [],
                 initial_problem_count:0,
+                question_stats: {"easy":0,"medium":0,"hard":0},
                 scores: [
                     {
                         name: "array",

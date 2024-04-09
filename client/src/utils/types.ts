@@ -21,9 +21,12 @@ export type UserStruct = {
     email: string;
     name: string;
     doj: string;
-    is_beginner:boolean,
-    initial_problem_count:number,
+    is_beginner:boolean;
+    initial_problem_count:number;
     question_solved: string[];
+    question_stats: {
+        [key:string]: number
+    };
     scores: [
         {
             name: string;

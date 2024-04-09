@@ -11,22 +11,22 @@ import https, { RequestOptions } from "https";
 import { setInitialScore, setScoreOnSubmit, getTestCaseScore} from '../../../../model.js';
 import { getUserData } from "@/utils/userDataFetch";
 import { toast } from "react-toastify";
-// import { get } from "http";
-// import { getAuth } from "firebase/auth";
-
+import axios, { AxiosResponse } from 'axios';
+import { Writable } from 'stream';
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
 // }
 
 type PlaygroundProps = {
-  questiondata: DBProblem | null;
-  sendDataToWS: (data: string) => void;
-  userIdFromProblem: string;
+	questiondata: DBProblem | null;
+	sendDataToWS: (data: string) => void;
+	userIdFromProblem: string;
+	toggleFeedback: () => void;
 };
 
 
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem}) => {
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem,toggleFeedback}) => {
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -43,6 +43,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
   const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
 	const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
   const [totalTestCases, setTotalTestCases] = useState<number>(0);
+  const codemirrorExtensions = [EditorView.lineWrapping, selectedLanguage === "python" ? python() : cpp()];
 	// const [attempts,setAttempts] = useState(0);
   // let totalNumberOfTestcases=0;
 
@@ -301,57 +302,68 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
     }
   };
 
-  const handleSubmitButtonClick = async (questiondata: DBProblem | null) => {
-    console.log("Submit button clicked");
-    if (questiondata == null) {
-      return;
-    }
-    if (testcases == 0) {
-      console.log("click run button first to check test cases");
-      return;
-    }
-    const showFeedback = !(await isQuestionSolved(
-      questiondata.id,
-      userIdFromProblem
-    ));
-    if (!showFeedback) {
-      console.log("question already solved.");
-      return;
-    }
+	const handleSubmit = async (questiondata:DBProblem|null) => {
+		console.log("New Submit Logic");
+		if (questiondata === null) {
+			return;
+		}
+		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
+		if(!showFeedback){
+			console.log("question already solved.");
+			return;
+		}
+		sendDataToWS(sourceCode);
+		toggleFeedback();
+	}
+
+	const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
+		console.log("Submit button clicked");
+		if(questiondata==null){
+			return;
+		}
+		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
+		if(!showFeedback){
+			console.log("question already solved.");
+			return;
+		}
     const testCaseScore = getTestCaseScore(testCaseArray,totalTestCases);
     console.log(`testCaseScore is ${testCaseScore}`);
-    const options: RequestOptions = {
-      method: "POST",
-      hostname: "api.deepseek.com",
-      path: "/v1/chat/completions",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization:
-          "Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
-      },
+		
+		// const options: RequestOptions = {
+		// method: "POST",
+		// hostname: "api.deepseek.com",
+		// path: "/v1/chat/completions",
+		// headers: {
+		// 	"Content-Type": "application/json",
+		// 	Accept: "application/json",
+		// 	Authorization:
+		// 	"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
+		// },
+		// };
+		// const req = https.request(options, (res) => {
+		// let chunks: Buffer[] = [];
+
+		// res.on("data", (chunk: Buffer) => {
+		// 	chunks.push(chunk);
+		// });
+		
+		// res.on("end", () => {
+			
+		// 	let body = Buffer.concat(chunks);
+		// 	let content = JSON.parse(body.toString());
+		// 	//console.log(body);
+		// 	// console.log(content)
+		// 	let feedbackResponse = content.choices[0].message.content;
+		// 	sendDataToWS(feedbackResponse);
+		// 	showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
+		// });
+
+		// res.on("error", (error) => {
+		// 	console.error(error);
+		// });
+		// });
+
     };
-    const req = https.request(options, (res) => {
-      let chunks: Buffer[] = [];
-
-      res.on("data", (chunk: Buffer) => {
-        chunks.push(chunk);
-      });
-
-      res.on("end", () => {
-        let body = Buffer.concat(chunks);
-        let content = JSON.parse(body.toString());
-        //console.log(body);
-        // console.log(content)
-        let feedbackResponse = content.choices[0].message.content;
-        sendDataToWS(feedbackResponse);
-        showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse),testCaseScore): console.log("question already solved");
-      });
-
-      res.on("error", (error) => {
-        console.error(error);
-      });
-    });
 
     let postData = JSON.stringify({
       messages: [
@@ -376,11 +388,6 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       top_p: 1,
     });
 
-    req.write(postData);
-
-    req.end();
-  };
-
   return (
     <div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">
       <PreferenceNav
@@ -397,7 +404,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
           <CodeMirror
             value={sourceCode}
             theme={vscodeDark}
-            extensions={[cpp(), python(), EditorView.lineWrapping]}
+            extensions={codemirrorExtensions}
             style={{ fontSize: 16 }}
             onChange={(value) => {
               setSourceCode(value as string);
@@ -482,11 +489,10 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       </Split>
       <EditorFooter
         onRunButtonClick={() => handleRunButtonClick(questiondata)}
-        onSubmitButtonClick={() => handleSubmitButtonClick(questiondata)}
+        onSubmitButtonClick={() => handleSubmit(questiondata)}
         isBeginner={beginnerValue}
       />
     </div>
   );
-
 };
 export default Playground;
