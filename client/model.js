@@ -91,7 +91,7 @@ export async function setInitialScore(questionData,userId,testcases){
     }
 }
 
-export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcaseScore) {
+export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcaseScore,isFullPass) {
     console.log("inside setScoreOnSubmit");
     try{
         let userInfo= await getUserData(userId);
@@ -100,17 +100,15 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
             let userScoresAll=userInfo.scores;
             console.log('User data fetched at model.js:',userInfo);
             let scoresObject=convertToScoresObject(userScoresAll);
-            // console.log("inside the model.js file");
             let difficultyLevel=questionData.difficulty.toLowerCase();
             let topicList=questionData.topics.toLowerCase().split(",");
-            // let score=userScore;
-            // console.log(`score is ${score}`);
             scoresObject=updateScores(scoresObject,feedbackScore,testcaseScore,topicList,difficultyLevel);
             let recommendQuestions=getRecommendQuestions(scoresObject);
-
             userScoresAll=convertToScoresArray(scoresObject);
             await updateUserScore(userId,userScoresAll);
-            await updateQuestionsSolved(userId,questionData.id);
+            if(isFullPass){
+                await updateQuestionsSolved(userId,questionData.id); 
+            }
         }else{
             console.log("could not get user data at model.js");
         }
@@ -133,7 +131,7 @@ function getScoreRate(prevScore) {
     const k=0.7;  // k increases, change decreases
     const checkpoint=80; // after 50, points gained decreases significantly
     const attemptLimit=7; // after which insignificant change in score
-    // const attemptRate = attemptLimit/attempts; return = return * attemptRate
+    // const attemptRate = attemptLimit/attempts; if you want this, return = return * attemptRate
     return  (1 / (1 + Math.exp(k * (prevScore - checkpoint))));
 }
 
@@ -144,7 +142,6 @@ function updateScores(scoresArray,feedbackScore,testcaseScore,topicList,difficul
       	const scoreRate = getScoreRate(scoresArray[topic]);
         scoresArray[topic] = Math.round(scoresArray[topic]+ topicScoreIncrease * scoreRate );
     });
-
     return scoresArray;
 }
 
@@ -170,19 +167,45 @@ export function getTestCaseScore(array,totalTestCases){
     return scoreIn10;
 }
 
-    export function getRecommendQuestions(scoresArray){
-        let normalizedScores = structuredClone(scoresArray);
-        let sum=0;
-        const totalQuestions=20;
-        for(let key in normalizedScores){
-            sum += normalizedScores[key]
+function getRecommendQuestions(scoresArray){
+    let normalizedScores=[];
+    let inverseSum=0;
+    const values = Object.values(scoresArray);
+    const keys = Object.keys(scoresArray);
+    console.log(values);
+    for(let i=0;i<values.length;i++){
+        if(values[i]!=0){
+            normalizedScores[i]=1/values[i];
+        }else{
+            normalizedScores[i]=0;
         }
-        for(let key in normalizedScores){
-            normalizedScores[key]=Math.round((normalizedScores[key]/sum)*totalQuestions);
-        }
-        return normalizedScores;
-        
+        inverseSum+=normalizedScores[i];
     }
+    const totalSlots=20;
+    const scaleFactor = totalSlots / inverseSum;
+    for(let i=0;i<normalizedScores.length;i++){
+        normalizedScores[i]=Math.round(scaleFactor*normalizedScores[i]);
+    }
+    let questions = new Object;
+    let i=0;
+    for(let key in scoresArray){
+        questions[key]=normalizedScores[i];
+        i++;
+    }
+    return questions;
+}
+// function getRecommendQuestions(scoresArray){
+//     let normalizedScores = structuredClone(scoresArray);
+//     let sum=0;
+//     const totalQuestions=20;
+//     for(let key in normalizedScores){
+//         sum += normalizedScores[key]
+//     }
+//     for(let key in normalizedScores){
+//         normalizedScores[key]=Math.round((normalizedScores[key]/sum)*totalQuestions);
+//     }
+//     return normalizedScores;
+// }
 // function recommendQuestions(scoresArray){
 //     let normalizedScores=[];
 //      let inverseSum=0;
