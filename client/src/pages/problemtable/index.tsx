@@ -1,11 +1,8 @@
 import { problems } from "@/questions/problems";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { BsCheckCircle } from "react-icons/bs";
 import { FaFlagCheckered } from "react-icons/fa";
 import { AiFillYoutube } from "react-icons/ai";
-import { IoClose } from "react-icons/io5";
-import YouTube from "react-youtube";
 import Topbar from "@/components/Topbar/Topbar";
 type ProblemTableProps = {};
 
