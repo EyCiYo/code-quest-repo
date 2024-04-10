@@ -19,7 +19,8 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
   const [showColor,setShowColor] = useState(1);
   const [dataFromPG,setDataFromPG] = useState<string>('');
   const [userId,setUserId]=useState('');
-
+  const [testScore,setTestscore] = useState<number>(0);
+  const [fullTestPass,setFullTestPass] = useState<boolean>(false);
 
   const problemDescription = () => {
     setShowDescription(true);
@@ -39,7 +40,14 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
   const handleUserId = (data:string)=>{
     setUserId(data);
   }
-  
+  const handleTestScore = (data:number)=>{
+    setTestscore(data);
+  }
+
+  const handleFullPass = (data:boolean)=>{
+    setFullTestPass(data);
+  }
+
   return (
     <Split className="split" sizes={[50, 50]}>
       <div>
@@ -62,10 +70,10 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
           </div>
         </div>
         {showDescription && <ProblemDescription questiondata={questiondata} getUserId={handleUserId}/>}
-        {showFeedback && <Feedback dataFromPG={dataFromPG} questiondata={questiondata}/>}
+        {showFeedback && <Feedback dataFromPG={dataFromPG} questiondata={questiondata} testScore={testScore} isFullPass={fullTestPass} userId = {userId}/>}
       </div>
 
-      <Playground questiondata={questiondata} sendDataToWS={handleDataFromPG} userIdFromProblem={userId} toggleFeedback={feedback}/>
+      <Playground questiondata={questiondata} sendDataToWS={handleDataFromPG} userIdFromProblem={userId} toggleFeedback={feedback} testScore={handleTestScore} isFullPass={handleFullPass}/>
     </Split>
   );
   

@@ -2,13 +2,32 @@ import { DBProblem } from "@/utils/types";
 import React, { useEffect, useState,useRef } from "react";
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { setScoreOnSubmit } from "../../../../model";
 
 type FeedbackProps = {
     dataFromPG: string;
     questiondata: DBProblem | null;
+    testScore : number;
+    isFullPass : boolean;
+    userId : string
 };
 
-const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata }) => {
+const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata, testScore, isFullPass, userId}) => {
+    const getScore = (feedback: string) => {
+        const last = "/10";
+        const indexLast = feedback.indexOf(last);
+        const first = "Score is ";
+        const indexFirst = feedback.indexOf(first);
+        return parseInt(feedback.substring(indexFirst + first.length, indexLast));
+    };
+
+    const getFeedback = (feedback : string) =>{
+        const first = "Score is ";
+        const indexOfScore = feedback.indexOf(first);
+        //console.log(feedback.substring(0,indexOfScore));
+        return feedback.substring(0,indexOfScore);
+    }
+
     const removeCode = (content: string) => {
         return content.replace(/```[\s\S]*?```/g, "");
     }
@@ -34,14 +53,20 @@ const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata }) => {
                     }
                     const reader = res.body.getReader();
                     const decoder = new TextDecoder();
+                    let text="";
                     while(true){
                         const {value,done} = await reader.read(); 
-                        const text = decoder.decode(value);
+                        text = decoder.decode(value);
+                        const feedbackOnly = getFeedback(text); 
                         console.log('Text:', text);
-                        setLines(curValue => curValue + text);
+                        setLines(curValue => curValue + feedbackOnly);
                         if(done){
                             break;
                         }
+                    }
+                    if(isFullPass){
+                        const feedbackScore = getScore(text);
+                        setScoreOnSubmit(questiondata,userId,feedbackScore,testScore,isFullPass);
                     }
                 }
                 catch(error){
