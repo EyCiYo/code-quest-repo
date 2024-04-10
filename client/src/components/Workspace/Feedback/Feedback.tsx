@@ -67,6 +67,7 @@ const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata, testScor
                     if(isFullPass){
                         const feedbackScore = getScore(text);
                         setScoreOnSubmit(questiondata,userId,feedbackScore,testScore,isFullPass);
+                        // just a comment
                     }
                 }
                 catch(error){
