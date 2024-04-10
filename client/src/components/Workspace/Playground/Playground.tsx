@@ -23,10 +23,12 @@ type PlaygroundProps = {
 	sendDataToWS: (data: string) => void;
 	userIdFromProblem: string;
 	toggleFeedback: () => void;
+  testScore: (data: number) => void;
+  isFullPass : (data: boolean) => void;
 };
 
 
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem,toggleFeedback}) => {
+const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem,toggleFeedback,testScore,isFullPass}) => {
 
   const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
 	const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -43,6 +45,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
   const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
 	const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
   const [totalTestCases, setTotalTestCases] = useState<number>(0);
+  const [passAllCases,setPassAllCases] = useState<boolean>(false);
   const codemirrorExtensions = [EditorView.lineWrapping, selectedLanguage === "python" ? python() : cpp()];
 	// const [attempts,setAttempts] = useState(0);
   // let totalNumberOfTestcases=0;
@@ -291,6 +294,9 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       });
       setFailedTestCaseIdx(failedIdx);
       setTestcases(testcases);
+      if(testcases==totalTestCases){
+        setPassAllCases(true);
+      }
       console.log("adding the testcase to testcase array");
       setTestCaseArray([...testCaseArray, testcases]);
       showTestcaseScore && beginnerValue
@@ -314,56 +320,60 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
 		}
 		sendDataToWS(sourceCode);
 		toggleFeedback();
-	}
-
-	const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
-		console.log("Submit button clicked");
-		if(questiondata==null){
-			return;
-		}
-		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
-		if(!showFeedback){
-			console.log("question already solved.");
-			return;
-		}
     const testCaseScore = getTestCaseScore(testCaseArray,totalTestCases);
     console.log(`testCaseScore is ${testCaseScore}`);
-		
-		// const options: RequestOptions = {
-		// method: "POST",
-		// hostname: "api.deepseek.com",
-		// path: "/v1/chat/completions",
-		// headers: {
-		// 	"Content-Type": "application/json",
-		// 	Accept: "application/json",
-		// 	Authorization:
-		// 	"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
-		// },
-		// };
-		// const req = https.request(options, (res) => {
-		// let chunks: Buffer[] = [];
+    testScore(testCaseScore);
+    isFullPass(passAllCases);
+	}
 
-		// res.on("data", (chunk: Buffer) => {
-		// 	chunks.push(chunk);
-		// });
+	// const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
+	// 	console.log("Submit button clicked");
+	// 	if(questiondata==null){
+	// 		return;
+	// 	}
+	// 	const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
+	// 	if(!showFeedback){
+	// 		console.log("question already solved.");
+	// 		return;
+	// 	}
+  //   const testCaseScore = getTestCaseScore(testCaseArray,totalTestCases);
+  //   console.log(`testCaseScore is ${testCaseScore}`);
 		
-		// res.on("end", () => {
+	// 	// const options: RequestOptions = {
+	// 	// method: "POST",
+	// 	// hostname: "api.deepseek.com",
+	// 	// path: "/v1/chat/completions",
+	// 	// headers: {
+	// 	// 	"Content-Type": "application/json",
+	// 	// 	Accept: "application/json",
+	// 	// 	Authorization:
+	// 	// 	"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
+	// 	// },
+	// 	// };
+	// 	// const req = https.request(options, (res) => {
+	// 	// let chunks: Buffer[] = [];
+
+	// 	// res.on("data", (chunk: Buffer) => {
+	// 	// 	chunks.push(chunk);
+	// 	// });
+		
+	// 	// res.on("end", () => {
 			
-		// 	let body = Buffer.concat(chunks);
-		// 	let content = JSON.parse(body.toString());
-		// 	//console.log(body);
-		// 	// console.log(content)
-		// 	let feedbackResponse = content.choices[0].message.content;
-		// 	sendDataToWS(feedbackResponse);
-		// 	showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
-		// });
+	// 	// 	let body = Buffer.concat(chunks);
+	// 	// 	let content = JSON.parse(body.toString());
+	// 	// 	//console.log(body);
+	// 	// 	// console.log(content)
+	// 	// 	let feedbackResponse = content.choices[0].message.content;
+	// 	// 	sendDataToWS(feedbackResponse);
+			// showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
+	// 	// });
 
-		// res.on("error", (error) => {
-		// 	console.error(error);
-		// });
-		// });
+	// 	// res.on("error", (error) => {
+	// 	// 	console.error(error);
+	// 	// });
+	// 	// });
 
-    };
+  //   };
 
     let postData = JSON.stringify({
       messages: [
