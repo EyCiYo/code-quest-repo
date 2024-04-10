@@ -4,7 +4,7 @@ import { updateQuestionsSolved } from "@/utils/updateQuestionsSolved";
 import { updateUserScore } from "@/utils/updateUserScore";
 import { updateBeginnerStatus } from "@/utils/updateBeginnerStatus";
 import { updateProblemCount } from "@/utils/updateProblemCount";
-
+import { ScoreArray } from "@/utils/types";
 // var scoresArray = {
 //     "array": 10,
 //     "math":20,
@@ -40,7 +40,7 @@ const totalInitialProblems=3;
 //-----------------------------------------------------------------//
 //function definitions
 
-function convertToScoresObject(keyValueArray) {
+export function convertToScoresObject(keyValueArray) {
     var arrayOfScores = {};
 
     for (var i = 0; i < keyValueArray.length; i++) {
@@ -170,18 +170,19 @@ export function getTestCaseScore(array,totalTestCases){
     return scoreIn10;
 }
 
-function getRecommendQuestions(scoresArray){
-    let normalizedScores = structuredClone(scoresArray);
-    let sum=0;
-    const totalQuestions=20;
-    for(let key in normalizedScores){
-        sum += normalizedScores[key]
+    export function getRecommendQuestions(scoresArray){
+        let normalizedScores = structuredClone(scoresArray);
+        let sum=0;
+        const totalQuestions=20;
+        for(let key in normalizedScores){
+            sum += normalizedScores[key]
+        }
+        for(let key in normalizedScores){
+            normalizedScores[key]=Math.round((normalizedScores[key]/sum)*totalQuestions);
+        }
+        return normalizedScores;
+        
     }
-    for(let key in normalizedScores){
-        normalizedScores[key]=Math.round((normalizedScores[key]/sum)*totalQuestions);
-    }
-    return normalizedScores;
-}
 // function recommendQuestions(scoresArray){
 //     let normalizedScores=[];
 //      let inverseSum=0;
