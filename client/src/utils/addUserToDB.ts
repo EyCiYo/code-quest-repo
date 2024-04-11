@@ -1,5 +1,5 @@
 import { firestore } from "@/firebase/firebase";
-import {doc,setDoc} from "firebase/firestore";
+import {doc,setDoc,arrayUnion} from "firebase/firestore";
 
 export async function addUserToDB(email: string, name: string, userid: string) {
         try {
@@ -14,6 +14,8 @@ export async function addUserToDB(email: string, name: string, userid: string) {
                 question_solved: [],
                 initial_problem_count:0,
                 question_stats: {"easy":0,"medium":0,"hard":0},
+                initial_test_questions: ["two-sum","integer-to-roman","longest-palindromic-substring","search-insert-position"], // Add initial test questions as an empty array
+                questions_to_display: arrayUnion(),
                 scores: [
                     {
                         name: "array",
@@ -124,10 +126,6 @@ export async function addUserToDB(email: string, name: string, userid: string) {
                         score: 0,
                     },
                     {
-                        name: "shell",
-                        score: 0,
-                    },
-                    {
                         name: "linked list",
                         score: 0,
                     },
@@ -168,7 +166,7 @@ export async function addUserToDB(email: string, name: string, userid: string) {
                         score: 0,
                     },
                     {
-                        name: "heap (priority queue)",
+                        name: "heap",
                         score: 0,
                     },
                     {
