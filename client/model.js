@@ -5,6 +5,7 @@ import { updateUserScore } from "@/utils/updateUserScore";
 import { updateBeginnerStatus } from "@/utils/updateBeginnerStatus";
 import { updateProblemCount } from "@/utils/updateProblemCount";
 import { updateQuestionStatus } from "@/utils/updateQuestionStatus";
+import {topicArray} from "@/utils/types";
 
 
 // var scoresArray = {
@@ -75,7 +76,7 @@ var topicWeight = {
 };
 
 
-const totalInitialProblems=3;
+const totalInitialProblems=4;
 // let topicList=[]
 // let difficultyLevel="";
 // let score=0;
@@ -224,6 +225,9 @@ export function getTestCaseScore(array,totalTestCases){
     return scoreIn10;
 }
 
+/**
+ * @returns {topicArray} 
+ */
 export function getRecommendQuestions(scoresArray){
     let normalizedScores=[];
     let inverseSum=0;
@@ -251,6 +255,9 @@ export function getRecommendQuestions(scoresArray){
     }
     return questions;
 }
+/**
+ * @returns {topicArray} 
+ */
 export function getRecommendVideos(scoresArray){
     let normalizedScores=[];
     let inverseSum=0;
