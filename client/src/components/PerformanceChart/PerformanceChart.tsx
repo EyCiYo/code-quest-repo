@@ -62,11 +62,13 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({userData}) => {
     <div className="flex flex-col md:flex-row flex-wrap overflow-x-auto p-4">
     {data.map((item, index) => (
       <div key={index} className="flex-shrink-0 mx-4 my-2 md:my-2 w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
+        {item.score>0 &&
         <div className="border rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-2 text-center" style={{ fontSize: "24px" }}>
             {capitalizeFirstLetter(item.name)}
           </h3>
-          <div className="flex justify-center items-center" style={{height: "500px"}}>
+          
+            <div className="flex justify-center items-center" style={{height: "500px"}}>
             <div className="w-full sm:w-3/4 md:w-4/5 lg:w-3/4"> 
               <CircularProgressbar
                 value={item.score}
@@ -85,7 +87,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({userData}) => {
               />
             </div>
           </div>
-        </div>
+          
+        </div>}
       </div>
     ))}
 </div>
