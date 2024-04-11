@@ -6,6 +6,9 @@ import Feedback from "./Feedback/Feedback";
 import { DBProblem, UserStruct } from "@/utils/types";
 import { User } from "firebase/auth";
 import { getUserData } from "@/utils/userDataFetch";
+import { useEffect } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/firebase/firebase";
 
 type WorkspaceProps = {
   questiondata: DBProblem | null;
@@ -21,6 +24,19 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
   const [userId,setUserId]=useState('');
   const [testScore,setTestscore] = useState<number>(0);
   const [fullTestPass,setFullTestPass] = useState<boolean>(false);
+  const [userData, setUserData] = useState<UserStruct | null>(null);
+  const [user] = useAuthState(auth);
+  useEffect(() => {
+    if (user){
+      getUserData(user.uid)
+        .then((data) => {
+          setUserData(data);
+        })
+        .catch((error) => {
+          console.error("Error getting user data:", error);
+        });
+      }
+  }, [user]);
 
   const problemDescription = () => {
     setShowDescription(true);
@@ -60,17 +76,17 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
           >
             Description
           </div>
-          <div
+          {!userData?.is_beginner&&<div
             className={
               `bg-dark-layer-${showColor?2:1} rounded-t-[5px] px-5 py-[10px] text-xs cursor-pointer ml-1`
             }
             onClick={feedback}
           >
             Feedback
-          </div>
+          </div>}
         </div>
         {showDescription && <ProblemDescription questiondata={questiondata} getUserId={handleUserId}/>}
-        {showFeedback && <Feedback dataFromPG={dataFromPG} questiondata={questiondata} testScore={testScore} isFullPass={fullTestPass} userId = {userId}/>}
+        {showFeedback &&  <Feedback dataFromPG={dataFromPG} questiondata={questiondata} testScore={testScore} isFullPass={fullTestPass} userId = {userId}/>}
       </div>
 
       <Playground questiondata={questiondata} sendDataToWS={handleDataFromPG} userIdFromProblem={userId} toggleFeedback={feedback} testScore={handleTestScore} isFullPass={handleFullPass}/>
