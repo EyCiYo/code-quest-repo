@@ -6,6 +6,7 @@ import { getUserData } from "@/utils/userDataFetch";
 import { auth } from "@/firebase/firebase";
 import { UserStruct } from "@/utils/types";
 
+
 const RecommendationsPage: React.FC = () => {
   const [recommendedVideos, setRecommendedVideos] = useState<
     { url: string; title: string }[]
@@ -31,7 +32,7 @@ const RecommendationsPage: React.FC = () => {
   useEffect(() => {
     if (!userData) return;
     const scoresArray = convertToScoresObject(userData.scores) || [];
-    const recommendations = getRecommendVideos(scoresArray) as Object;
+    const recommendations = getRecommendVideos(scoresArray) ;
     console.log("Topic and No. of Questions recommended");
     for (let key in recommendations) {
       console.log(key, recommendations[key]);
