@@ -27,14 +27,53 @@ var difficultyWeight = {
 
 var topicWeight = {
     "array": 0.1,
-    "math":0.2,
+    "hash table": 0.25,
     "string": 0.2,
-    "hash table":0.3,
-    "binary search":0.3,
-    "tree": 0.6,
-    "graph": 0.6,
-    "dynamic programming": 0.7
-}
+    "sliding window": 0.2,
+    "dynamic programming": 0.8,
+    "recursion": 0.7,
+    "math": 0.3,
+    "bit manipulation": 0.45,
+    "two pointers": 0.45,
+    "greedy": 0.55,
+    "sorting": 0.35,
+    "stack": 0.45,
+    "backtracking": 0.55,
+    "binary search": 0.35,
+    "matrix": 0.7,
+    "simulation": 0.6,
+    "divide and conquer": 0.7,
+    "monotonic stack": 0.7,
+    "union find": 0.6,
+    "depth-first search": 0.7,
+    "breadth-first search": 0.7,
+    "trie": 0.45,
+    "geometry": 0.55,
+    "bucket sort": 0.45,
+    "radix sort": 0.45,
+    "rolling hash": 0.45,
+    "hash function": 0.45,
+    "shell": 0.35,
+    "linked list": 0.35,
+    "enumeration": 0.35,
+    "number theory": 0.45,
+    "graph": 0.7,
+    "topological sort": 0.6,
+    "quickselect": 0.6,
+    "binary indexed tree": 0.6,
+    "segment tree": 0.6,
+    "line sweep": 0.6,
+    "prefix sum": 0.5,
+    "heap (priority queue)": 0.6,
+    "ordered set": 0.5,
+    "binary tree": 0.7,
+    "binary search tree": 0.6,
+    "monotonic queue": 0.6,
+    "queue": 0.5,
+    "interactive": 0.5,
+    "database": 0.5
+};
+
 
 const totalInitialProblems=3;
 // let topicList=[]
@@ -44,7 +83,7 @@ const totalInitialProblems=3;
 //-----------------------------------------------------------------//
 //function definitions
 
-function convertToScoresObject(keyValueArray) {
+export function convertToScoresObject(keyValueArray) {
     var arrayOfScores = {};
 
     for (var i = 0; i < keyValueArray.length; i++) {
@@ -185,7 +224,7 @@ export function getTestCaseScore(array,totalTestCases){
     return scoreIn10;
 }
 
-function getRecommendQuestions(scoresArray){
+export function getRecommendQuestions(scoresArray){
     let normalizedScores=[];
     let inverseSum=0;
     const values = Object.values(scoresArray);
@@ -199,7 +238,34 @@ function getRecommendQuestions(scoresArray){
         }
         inverseSum+=normalizedScores[i];
     }
-    const totalSlots=20;
+    const totalSlots=10;
+    const scaleFactor = totalSlots / inverseSum;
+    for(let i=0;i<normalizedScores.length;i++){
+        normalizedScores[i]=Math.round(scaleFactor*normalizedScores[i]);
+    }
+    let questions = new Object;
+    let i=0;
+    for(let key in scoresArray){
+        questions[key]=normalizedScores[i];
+        i++;
+    }
+    return questions;
+}
+export function getRecommendVideos(scoresArray){
+    let normalizedScores=[];
+    let inverseSum=0;
+    const values = Object.values(scoresArray);
+    const keys = Object.keys(scoresArray);
+    console.log(values);
+    for(let i=0;i<values.length;i++){
+        if(values[i]!=0){
+            normalizedScores[i]=1/values[i];
+        }else{
+            normalizedScores[i]=0;
+        }
+        inverseSum+=normalizedScores[i];
+    }
+    const totalSlots=15;
     const scaleFactor = totalSlots / inverseSum;
     for(let i=0;i<normalizedScores.length;i++){
         normalizedScores[i]=Math.round(scaleFactor*normalizedScores[i]);
