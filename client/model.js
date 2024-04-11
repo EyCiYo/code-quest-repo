@@ -138,7 +138,7 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
 // initialScores using no. of testcases passed 
 function intialScores(scoresArray,topicList,testcases,difficultyLevel){
     const totalTestCases=10;
-    console.log("topicList is ",topicList);
+    // console.log("topicList is ",topicList);
     topicList.forEach((topic)=>{
         scoresArray[topic]=Math.ceil(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases)*10)
     });
@@ -199,7 +199,7 @@ function getRecommendQuestions(scoresArray){
         }
         inverseSum+=normalizedScores[i];
     }
-    const totalSlots=20;
+    const totalSlots=10;
     const scaleFactor = totalSlots / inverseSum;
     for(let i=0;i<normalizedScores.length;i++){
         normalizedScores[i]=Math.round(scaleFactor*normalizedScores[i]);
