@@ -16,7 +16,7 @@ const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata, testScor
     const getScore = (feedback: string) => {
         const last = "/10";
         const indexLast = feedback.indexOf(last);
-        const first = "Score is ";
+        const first = "Score: ";
         const indexFirst = feedback.indexOf(first);
         return parseInt(feedback.substring(indexFirst + first.length, indexLast));
     };

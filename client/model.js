@@ -64,7 +64,7 @@ var topicWeight = {
     "segment tree": 0.6,
     "line sweep": 0.6,
     "prefix sum": 0.5,
-    "heap (priority queue)": 0.6,
+    "heap": 0.6,
     "ordered set": 0.5,
     "binary tree": 0.7,
     "binary search tree": 0.6,

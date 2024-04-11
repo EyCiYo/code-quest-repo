@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/firebase/firebase";
@@ -18,6 +20,7 @@ export default function Home() {
   const setAuthModalState = useSetRecoilState(authModalState); // Assuming UserStruct is defined somewhere
   const router = useRouter();
   const authModal = useRecoilValue(authModalState);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -28,6 +31,10 @@ export default function Home() {
         .catch((error) => {
           console.error("Error getting user data:", error);
         });
+        setIsLoading(false);
+    }
+    else{
+      setIsLoading(true);
     }
   }, [user]);
 
@@ -42,9 +49,9 @@ export default function Home() {
 
   return (
     <main className="bg-dark-layer-2 bg-gradient-to-b from-gray-600 to-black min-h-screen flex flex-col items-center justify-center">
-      <header className="absolute top-0 right-0 p-8">
+      {!isLoading && <header className="absolute top-0 right-0 p-8">
         {user && <Logout />}
-      </header>
+      </header>}
       <img
         src="/logo.png"
         alt="Your Logo"
@@ -55,7 +62,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold mb-4">
           A Personalized Coding Interview Preparation Tool
         </h1>
-        {!user && (
+        {isLoading && (
           <div className="mt-8">
             <button
               onClick={handleLoginButtonClick}
