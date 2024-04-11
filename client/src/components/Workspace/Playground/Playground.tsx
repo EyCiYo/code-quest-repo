@@ -208,7 +208,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       userIdFromProblem
     ));
     if (!showTestcaseScore) {
-      console.log("Question already solved.");
+      alert("Question already solved.");
       return;
     }
     try {

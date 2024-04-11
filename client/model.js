@@ -119,7 +119,7 @@ export async function setInitialScore(questionData,userId,testcases){
             let topicList=questionData.topics.toLowerCase().split(",");
             scoresObject=intialScores(scoresObject,topicList,testcases,difficultyLevel);
             userScoresAll=convertToScoresArray(scoresObject) 
-            questionStatus=updateQuestionsStatus(questionData.difficulty,questionStatus);
+            questionStatus=changeQuestionsStatus(questionData.difficulty,questionStatus);
             console.log("new status is ",questionStatus);
             await updateUserScore(userId,userScoresAll);
             // solvedQuestions.push(questionData.id);  
@@ -141,7 +141,7 @@ export async function setInitialScore(questionData,userId,testcases){
     }
 }
 
-function updateQuestionsStatus(difficultyLevel,questionStatus){
+function changeQuestionsStatus(difficultyLevel,questionStatus){
     ++questionStatus[difficultyLevel.toLowerCase()]
     return questionStatus;
 }
@@ -178,7 +178,7 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
 // initialScores using no. of testcases passed 
 function intialScores(scoresArray,topicList,testcases,difficultyLevel){
     const totalTestCases=10;
-    console.log("topicList is ",topicList);
+    // console.log("topicList is ",topicList);
     topicList.forEach((topic)=>{
         scoresArray[topic]=Math.ceil(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases)*10)
     });
@@ -272,7 +272,7 @@ export function getRecommendVideos(scoresArray){
         }
         inverseSum+=normalizedScores[i];
     }
-    const totalSlots=15;
+    const totalSlots=10;
     const scaleFactor = totalSlots / inverseSum;
     for(let i=0;i<normalizedScores.length;i++){
         normalizedScores[i]=Math.round(scaleFactor*normalizedScores[i]);
