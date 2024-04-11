@@ -22,9 +22,10 @@ const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata, testScor
     };
 
     const getFeedback = (feedback : string) =>{
-        const first = "Score is ";
+        console.log("inside fn test",feedback);
+        const first = "Score: ";
         const indexOfScore = feedback.indexOf(first);
-        //console.log(feedback.substring(0,indexOfScore));
+        console.log("inside fn",feedback.substring(0,indexOfScore));
         return feedback.substring(0,indexOfScore);
     }
 
@@ -57,8 +58,9 @@ const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata, testScor
                     while(true){
                         const {value,done} = await reader.read(); 
                         text = decoder.decode(value);
+                        //console.log('Text:', text);
                         const feedbackOnly = getFeedback(text); 
-                        console.log('Text:', text);
+                        //console.log('Feedback:', feedbackOnly);
                         setLines(curValue => curValue + feedbackOnly);
                         if(done){
                             break;
@@ -79,7 +81,6 @@ const Feedback: React.FC<FeedbackProps> =  ({ dataFromPG, questiondata, testScor
         else{
             isMounted.current = true;
         }
-
     },[dataFromPG]);
 
     return (
