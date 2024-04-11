@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Topbar from "@/components/Topbar/Topbar";
-import {
-  getRecommendQuestions,
-  convertToScoresObject,
-} from "../../../model";
+import { getRecommendVideos, convertToScoresObject } from "../../../model";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getUserData } from "@/utils/userDataFetch";
 import { auth } from "@/firebase/firebase";
@@ -34,10 +31,8 @@ const RecommendationsPage: React.FC = () => {
   useEffect(() => {
     if (!userData) return;
     const scoresArray = convertToScoresObject(userData.scores) || [];
-    console.log(scoresArray);
-    const recommendations = getRecommendQuestions(scoresArray);
+    const recommendations = getRecommendVideos(scoresArray) as Object;
     console.log("Topic and No. of Questions recommended");
-    console.log(recommendations);
     for (let key in recommendations) {
       console.log(key, recommendations[key]);
     }
