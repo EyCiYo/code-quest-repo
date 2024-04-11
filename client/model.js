@@ -4,6 +4,8 @@ import { updateQuestionsSolved } from "@/utils/updateQuestionsSolved";
 import { updateUserScore } from "@/utils/updateUserScore";
 import { updateBeginnerStatus } from "@/utils/updateBeginnerStatus";
 import { updateProblemCount } from "@/utils/updateProblemCount";
+import { updateQuestionStatus } from "@/utils/updateQuestionStatus";
+
 
 // var scoresArray = {
 //     "array": 10,
@@ -19,7 +21,8 @@ import { updateProblemCount } from "@/utils/updateProblemCount";
 // var scoresArray={}
 var difficultyWeight = {
     "easy" : 1,
-    "medium" : 2
+    "medium" : 2,
+    "hard": 3
 }
 
 var topicWeight = {
@@ -32,6 +35,7 @@ var topicWeight = {
     "graph": 0.6,
     "dynamic programming": 0.7
 }
+
 const totalInitialProblems=3;
 // let topicList=[]
 // let difficultyLevel="";
@@ -67,18 +71,24 @@ export async function setInitialScore(questionData,userId,testcases){
             // let solvedQuestions=userInfo.question_solved;
             let userScoresAll=userInfo.scores;
             let initialProblemCount=userInfo.initial_problem_count; 
+            let questionStatus = userInfo.question_stats;
+            // console.log("old status is ",questionStatus);
             console.log('User data fetched at model.js:',userInfo);
             let scoresObject=convertToScoresObject(userScoresAll);
             let difficultyLevel=questionData.difficulty.toLowerCase();
             let topicList=questionData.topics.toLowerCase().split(",");
             scoresObject=intialScores(scoresObject,topicList,testcases,difficultyLevel);
-
             userScoresAll=convertToScoresArray(scoresObject) 
+            questionStatus=updateQuestionsStatus(questionData.difficulty,questionStatus);
+            console.log("new status is ",questionStatus);
             await updateUserScore(userId,userScoresAll);
             // solvedQuestions.push(questionData.id);  
             await updateQuestionsSolved(userId,questionData.id);
             // initialProblemCount++; 
             await updateProblemCount(userId,++initialProblemCount);
+
+            await updateQuestionStatus(userId,questionStatus);
+
             if(initialProblemCount==totalInitialProblems){
                 // let beginner = false;
                 await updateBeginnerStatus(userId);
@@ -91,6 +101,11 @@ export async function setInitialScore(questionData,userId,testcases){
     }
 }
 
+function updateQuestionsStatus(difficultyLevel,questionStatus){
+    ++questionStatus[difficultyLevel.toLowerCase()]
+    return questionStatus;
+}
+
 export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcaseScore,isFullPass) {
     console.log("inside setScoreOnSubmit");
     try{
@@ -98,6 +113,7 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
         if(userInfo){
             let solvedQuestions=userInfo.question_solved;
             let userScoresAll=userInfo.scores;
+            let questionStatus = userInfo.question_stats;
             console.log('User data fetched at model.js:',userInfo);
             let scoresObject=convertToScoresObject(userScoresAll);
             let difficultyLevel=questionData.difficulty.toLowerCase();
@@ -105,7 +121,9 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
             scoresObject=updateScores(scoresObject,feedbackScore,testcaseScore,topicList,difficultyLevel);
             let recommendQuestions=getRecommendQuestions(scoresObject);
             userScoresAll=convertToScoresArray(scoresObject);
+            questionStatus=updateQuestionsStatus(questionData.difficulty,questionStatus);
             await updateUserScore(userId,userScoresAll);
+            await updateQuestionStatus(userId,questionStatus);
             if(isFullPass){
                 await updateQuestionsSolved(userId,questionData.id); 
             }
