@@ -118,7 +118,7 @@ export async function setInitialScore(questionData,userId,testcases){
             let topicList=questionData.topics.toLowerCase().split(",");
             scoresObject=intialScores(scoresObject,topicList,testcases,difficultyLevel);
             userScoresAll=convertToScoresArray(scoresObject) 
-            questionStatus=updateQuestionsStatus(questionData.difficulty,questionStatus);
+            questionStatus=changeQuestionsStatus(questionData.difficulty,questionStatus);
             console.log("new status is ",questionStatus);
             await updateUserScore(userId,userScoresAll);
             // solvedQuestions.push(questionData.id);  
@@ -140,7 +140,7 @@ export async function setInitialScore(questionData,userId,testcases){
     }
 }
 
-function updateQuestionsStatus(difficultyLevel,questionStatus){
+function changeQuestionsStatus(difficultyLevel,questionStatus){
     ++questionStatus[difficultyLevel.toLowerCase()]
     return questionStatus;
 }
