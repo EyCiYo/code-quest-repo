@@ -11,9 +11,7 @@ import { updateUserScore } from '@/utils/updateUserScore';
 import { addNewField } from '@/utils/addNewField';
 import { updateQuestionsDisplay } from '@/utils/updateQuestionDisplay';
 
-type indexProps = {
-    
-};
+type indexProps = {};
 
 const index:React.FC<indexProps> = () => {
     
