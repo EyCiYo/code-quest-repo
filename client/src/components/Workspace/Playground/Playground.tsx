@@ -170,9 +170,13 @@ const Playground: React.FC<PlaygroundProps> = ({
     try {
       const response = await fetch(url, options);
       const result = await response.json();
+      let compilationStatus = true;
       for (var i = 0; i < result.length; i++) {
         if (result[i].id === status_id) {
           console.log(result[i].description);
+          if(result[i].description ==="Compilation Error"){
+            compilationStatus=false;
+          }
           toast.info(result[i].description, {
             theme: "dark",
             position: "top-center",
@@ -180,6 +184,7 @@ const Playground: React.FC<PlaygroundProps> = ({
           });
         }
       }
+      return compilationStatus;
     } catch (error) {
       console.error(error);
     }
@@ -280,7 +285,7 @@ const Playground: React.FC<PlaygroundProps> = ({
         },
       });
       const statusData = await statusResponse.json();
-      handleStatusID(statusData.status_id);
+      const compilationStatus = await handleStatusID(statusData.status_id);
       if (statusData.stderr) {
         toast.error(atob(statusData.stderr), {
           theme: "dark",
@@ -321,7 +326,8 @@ const Playground: React.FC<PlaygroundProps> = ({
       }
       console.log("adding the testcase to testcase array");
       setTestCaseArray([...testCaseArray, testcases]);
-      showTestcaseScore && beginnerValue
+      // console.log(`compilationStatus is ${compilationStatus}`);
+      showTestcaseScore && beginnerValue && compilationStatus
         ? setInitialScore(questiondata, userIdFromProblem, testcases)
         : console.log("not calling setInitialScore");
       alert(strRes);
