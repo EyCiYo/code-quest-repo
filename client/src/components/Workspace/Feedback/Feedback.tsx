@@ -89,6 +89,7 @@ const Feedback: React.FC<FeedbackProps> = ({
             if (userInfo) {
               const userscores = convertToScoresObject(userInfo.scores);
               const recomendedquestions = getRecommendQuestions(userscores);
+              console.log("Recommended Questions:", recomendedquestions);
               updateQuestionsDisplay(userId, recomendedquestions);
             }
 

@@ -8,49 +8,61 @@ import { cpp } from "@codemirror/lang-cpp";
 import EditorFooter from "./EditorFooter";
 import { DBProblem } from "@/utils/types";
 import https, { RequestOptions } from "https";
-import { setInitialScore, setScoreOnSubmit, getTestCaseScore} from '../../../../model.js';
+import {
+  setInitialScore,
+  setScoreOnSubmit,
+  getTestCaseScore,
+} from "../../../../model.js";
 import { getUserData } from "@/utils/userDataFetch";
 import { toast } from "react-toastify";
-import axios, { AxiosResponse } from 'axios';
-import { Writable } from 'stream';
+import axios, { AxiosResponse } from "axios";
+import { Writable } from "stream";
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
 // }
 
 type PlaygroundProps = {
-	questiondata: DBProblem | null;
-	sendDataToWS: (data: string) => void;
-	userIdFromProblem: string;
-	toggleFeedback: () => void;
+  questiondata: DBProblem | null;
+  sendDataToWS: (data: string) => void;
+  userIdFromProblem: string;
+  toggleFeedback: () => void;
   testScore: (data: number) => void;
-  isFullPass : (data: boolean) => void;
+  isFullPass: (data: boolean) => void;
 };
 
-
-const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userIdFromProblem,toggleFeedback,testScore,isFullPass}) => {
-
+const Playground: React.FC<PlaygroundProps> = ({
+  questiondata,
+  sendDataToWS,
+  userIdFromProblem,
+  toggleFeedback,
+  testScore,
+  isFullPass,
+}) => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
-	const displayTestCases = questiondata?.testcases.slice(0, 2);
+  const displayTestCases = questiondata?.testcases.slice(0, 2);
   const [boilerPlate, setBoilerPlate] = useState<string>(
-  	atob(questiondata?.boilerplate_py as string)
-  ); 
-  const [driver, setDriver] = useState<string>(
-  	atob(questiondata?.driver_py as string)
+    atob(questiondata?.boilerplate_py as string)
   );
-	const [beginnerValue, setBeginnerValue] = useState(true);
-	const [testcases,setTestcases] = useState(0);
-	const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
-	const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
+  const [driver, setDriver] = useState<string>(
+    atob(questiondata?.driver_py as string)
+  );
+  const [beginnerValue, setBeginnerValue] = useState(true);
+  const [testcases, setTestcases] = useState(0);
+  const [sourceCode, setSourceCode] = useState<string>(boilerPlate);
+  const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
   const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
-	const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
+  const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
   const [totalTestCases, setTotalTestCases] = useState<number>(0);
-  const [passAllCases,setPassAllCases] = useState<boolean>(false);
-  const codemirrorExtensions = [EditorView.lineWrapping, selectedLanguage === "python" ? python() : cpp()];
-	// const [attempts,setAttempts] = useState(0);
+  const [passAllCases, setPassAllCases] = useState<boolean>(false);
+  const codemirrorExtensions = [
+    EditorView.lineWrapping,
+    selectedLanguage === "python" ? python() : cpp(),
+  ];
+  // const [attempts,setAttempts] = useState(0);
   // let totalNumberOfTestcases=0;
 
-	const header = `
+  const header = `
 	#include <iostream>
 	#include <vector>
 	#include <string>
@@ -179,6 +191,16 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
   };
 
   const handleRunButtonClick = async (questiondata: DBProblem | null) => {
+    if (questiondata) {
+      const isnotsolved = !(await isQuestionSolved(
+        questiondata.id,
+        userIdFromProblem
+      ));
+      if (!isnotsolved) {
+        console.log("question already solved.");
+        return;
+      }
+    }
     const getLanguageId = async (lang: string) => {
       //get langugae id corresponding to the language selected
       const url = "https://judge0-ce.p.rapidapi.com/languages";
@@ -299,7 +321,7 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
       });
       setFailedTestCaseIdx(failedIdx);
       setTestcases(testcases);
-      if(testcases==totalTestCases){
+      if (testcases == totalTestCases) {
         setPassAllCases(true);
       }
       console.log("adding the testcase to testcase array");
@@ -314,95 +336,98 @@ const Playground: React.FC<PlaygroundProps> = ({questiondata,sendDataToWS,userId
     }
   };
 
-	const handleSubmit = async (questiondata:DBProblem|null) => {
-		console.log("New Submit Logic");
-		if (questiondata === null) {
-			return;
-		}
-		const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
-		if(!showFeedback){
-			console.log("question already solved.");
-			return;
-		}
-		sendDataToWS(sourceCode);
-		toggleFeedback();
-    const testCaseScore = getTestCaseScore(testCaseArray,totalTestCases);
+  const handleSubmit = async (questiondata: DBProblem | null) => {
+    console.log("New Submit Logic");
+    if (questiondata === null) {
+      return;
+    }
+    const showFeedback = !(await isQuestionSolved(
+      questiondata.id,
+      userIdFromProblem
+    ));
+    if (!showFeedback) {
+      console.log("question already solved.");
+      return;
+    }
+    sendDataToWS(sourceCode);
+    toggleFeedback();
+    const testCaseScore = getTestCaseScore(testCaseArray, totalTestCases);
     console.log(`testCaseScore is ${testCaseScore}`);
     testScore(testCaseScore);
     isFullPass(passAllCases);
-	}
+  };
 
-	// const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
-	// 	console.log("Submit button clicked");
-	// 	if(questiondata==null){
-	// 		return;
-	// 	}
-	// 	const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
-	// 	if(!showFeedback){
-	// 		console.log("question already solved.");
-	// 		return;
-	// 	}
+  // const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
+  // 	console.log("Submit button clicked");
+  // 	if(questiondata==null){
+  // 		return;
+  // 	}
+  // 	const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
+  // 	if(!showFeedback){
+  // 		console.log("question already solved.");
+  // 		return;
+  // 	}
   //   const testCaseScore = getTestCaseScore(testCaseArray,totalTestCases);
   //   console.log(`testCaseScore is ${testCaseScore}`);
-		
-	// 	// const options: RequestOptions = {
-	// 	// method: "POST",
-	// 	// hostname: "api.deepseek.com",
-	// 	// path: "/v1/chat/completions",
-	// 	// headers: {
-	// 	// 	"Content-Type": "application/json",
-	// 	// 	Accept: "application/json",
-	// 	// 	Authorization:
-	// 	// 	"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
-	// 	// },
-	// 	// };
-	// 	// const req = https.request(options, (res) => {
-	// 	// let chunks: Buffer[] = [];
 
-	// 	// res.on("data", (chunk: Buffer) => {
-	// 	// 	chunks.push(chunk);
-	// 	// });
-		
-	// 	// res.on("end", () => {
-			
-	// 	// 	let body = Buffer.concat(chunks);
-	// 	// 	let content = JSON.parse(body.toString());
-	// 	// 	//console.log(body);
-	// 	// 	// console.log(content)
-	// 	// 	let feedbackResponse = content.choices[0].message.content;
-	// 	// 	sendDataToWS(feedbackResponse);
-			// showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
-	// 	// });
+  // 	// const options: RequestOptions = {
+  // 	// method: "POST",
+  // 	// hostname: "api.deepseek.com",
+  // 	// path: "/v1/chat/completions",
+  // 	// headers: {
+  // 	// 	"Content-Type": "application/json",
+  // 	// 	Accept: "application/json",
+  // 	// 	Authorization:
+  // 	// 	"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
+  // 	// },
+  // 	// };
+  // 	// const req = https.request(options, (res) => {
+  // 	// let chunks: Buffer[] = [];
 
-	// 	// res.on("error", (error) => {
-	// 	// 	console.error(error);
-	// 	// });
-	// 	// });
+  // 	// res.on("data", (chunk: Buffer) => {
+  // 	// 	chunks.push(chunk);
+  // 	// });
+
+  // 	// res.on("end", () => {
+
+  // 	// 	let body = Buffer.concat(chunks);
+  // 	// 	let content = JSON.parse(body.toString());
+  // 	// 	//console.log(body);
+  // 	// 	// console.log(content)
+  // 	// 	let feedbackResponse = content.choices[0].message.content;
+  // 	// 	sendDataToWS(feedbackResponse);
+  // showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
+  // 	// });
+
+  // 	// res.on("error", (error) => {
+  // 	// 	console.error(error);
+  // 	// });
+  // 	// });
 
   //   };
 
-    let postData = JSON.stringify({
-      messages: [
-        {
-          content:
-            "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.Evaluate this code and at the end of your feedback in the next line give a score out of 10 in the format 'Score is 6/10' and there should not be anything after the score.",
-          role: "system",
-        },
-        {
-          content: sourceCode,
+  let postData = JSON.stringify({
+    messages: [
+      {
+        content:
+          "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.Evaluate this code and at the end of your feedback in the next line give a score out of 10 in the format 'Score is 6/10' and there should not be anything after the score.",
+        role: "system",
+      },
+      {
+        content: sourceCode,
 
-          role: "user",
-        },
-      ],
-      model: "deepseek-chat",
-      frequency_penalty: 0,
-      max_tokens: 2048,
-      presence_penalty: 0,
-      stop: null,
-      stream: false,
-      temperature: 0.2,
-      top_p: 1,
-    });
+        role: "user",
+      },
+    ],
+    model: "deepseek-chat",
+    frequency_penalty: 0,
+    max_tokens: 2048,
+    presence_penalty: 0,
+    stop: null,
+    stream: false,
+    temperature: 0.2,
+    top_p: 1,
+  });
 
   return (
     <div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">

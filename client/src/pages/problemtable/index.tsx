@@ -7,16 +7,18 @@ import { DBProblem, UserStruct } from "@/utils/types";
 import { getUserData } from "@/utils/userDataFetch";
 import PageLoading from "@/components/Modals/PageLoading";
 import { getQuestionData } from "@/utils/questionAPI";
+import { convertToScoresObject } from "../../../model";
+import { getRecommendQuestions } from "../../../model";
+import { updateQuestionsDisplay } from "@/utils/updateQuestionDisplay";
 
 interface ProblemTableProps {}
 
-
 const stripNumber = (title: string) => {
-    const regex = /^\d+\.\s/;
-    const match = title.match(regex);
-    const number = match ? match[0].replace(/\D/g, "") : "";
-    const strippedTitle = title.replace(regex, "");
-    return { number, strippedTitle };
+  const regex = /^\d+\.\s/;
+  const match = title.match(regex);
+  const number = match ? match[0].replace(/\D/g, "") : "";
+  const strippedTitle = title.replace(regex, "");
+  return { number, strippedTitle };
 };
 
 const ProblemTable: React.FC<ProblemTableProps> = () => {
@@ -39,6 +41,22 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
           console.error("Error getting user data:", error);
         });
     }
+    const fetchData = async () => {
+      if (user) {
+        try {
+          const data = await getUserData(user.uid);
+          setUserData(data);
+          if (data?.question_solved.length == 4) {
+            const userscores = convertToScoresObject(data?.scores);
+            const recomendedquestions = getRecommendQuestions(userscores);
+            updateQuestionsDisplay(user.uid, recomendedquestions);
+          }
+        } catch (error) {
+          console.error("Error getting user data:", error);
+        }
+      }
+    };
+    fetchData();
   }, [user]);
 
   useEffect(() => {
@@ -48,7 +66,7 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
           ? "Solve this Initial Test to begin learning"
           : "Here are some questions for you to solve";
         setHeadingText(heading);
-        
+
         const questionsToShow = userData.is_beginner
           ? userData.initial_test_questions
           : userData.questions_to_display;
@@ -122,7 +140,7 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
                           href={`/problems/${doc.id}`}
                           className="hover:text-blue-400 cursor-pointer"
                         >
-                            {strippedTitle}
+                          {strippedTitle}
                         </Link>
                       </td>
                       <td className={`px-6 py-4 ${difficultyColor}`}>
