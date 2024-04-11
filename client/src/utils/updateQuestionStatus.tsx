@@ -18,9 +18,9 @@ export async function updateQuestionStatus(uid: string, newStats: QuestionStats)
 
             // Merge the new stats with existing stats
             const mergedStats = {
-                easy: existingStats.easy + newStats.easy,
-                medium: existingStats.medium + newStats.medium,
-                hard: existingStats.hard + newStats.hard,
+                easy:  newStats.easy,
+                medium:  newStats.medium,
+                hard: newStats.hard,
             };
 
             await setDoc(userRef, { question_stats: mergedStats }, { merge: true });
