@@ -18,8 +18,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     The score should be the final sentence in the output. There shouldnt be anything after the score.
     `
 
-
-    console.log("req in api",req);
     const openai = new OpenAI({
         apiKey:String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
         baseURL:"https://api.deepseek.com/v1"
@@ -46,9 +44,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
     
         //Convert the response into a friendly text-stream
-        console.log('Chat Completion:',chatCompletion);
+        //console.log('Chat Completion:',chatCompletion);
         const stream = OpenAIStream(chatCompletion);
-        console.log('Stream:',stream);
+        //console.log('Stream:',stream);
         // Respond with the stream
         return streamToResponse(stream, res);
         } 
