@@ -19,7 +19,7 @@ export async function updateUserScore(uid: string, newScoreArray: Score) {
                 const existingScore = existingScores.find(
                     (score) => score.name === newScore.name
                 );
-                console.log("Existing score: ", existingScore);
+                //console.log("Existing score: ", existingScore);
                 if (existingScore && existingScore.score !== newScore.score) {
                     return {
                         name: newScore.name,
@@ -37,11 +37,11 @@ export async function updateUserScore(uid: string, newScoreArray: Score) {
                 }
             }
             await setDoc(userRef, { scores: mergedScores }, { merge: true });
-            console.log("User Scores Updated successfully");
+            //console.log("User Scores Updated successfully");
         } else {
             // If the document doesn't exist, create it with the new score array
             await setDoc(userRef, { scores: newScoreArray });
-            console.log("User Scores Document Created successfully");
+            //console.log("User Scores Document Created successfully");
         }
     } catch (error) {
         console.error("Error updating user scores:", error);

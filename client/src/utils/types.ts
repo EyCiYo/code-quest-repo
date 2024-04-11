@@ -33,5 +33,10 @@ export type UserStruct = {
             score: number;
         }
     ];
+    initial_test_questions : string[];
+    questions_to_display: string[];
 }
 
+export type topicArray = {
+    [key:string]: number
+}
