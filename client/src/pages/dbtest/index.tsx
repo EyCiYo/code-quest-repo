@@ -10,6 +10,7 @@ import { updateQuestionsSolved } from '@/utils/updateQuestionsSolved';
 import { updateUserScore } from '@/utils/updateUserScore';
 import { addNewField } from '@/utils/addNewField';
 import { updateQuestionsDisplay } from '@/utils/updateQuestionDisplay';
+import { addQuestionsFromCSV } from '@/utils/addQuestions';
 
 type indexProps = {};
 
@@ -19,6 +20,11 @@ const index:React.FC<indexProps> = () => {
     const setAuthModalState = useSetRecoilState(authModalState);
     const userid = user?.uid;
     const [questionId, setQuestionId] = useState('');
+
+    const addQuestionHandler = (event:any) => {
+        const file = event.target.files[0];
+        addQuestionsFromCSV();
+    };
 
     const handleUpdateQuestion = () => {
         console.log(questionId);
@@ -79,6 +85,8 @@ const index:React.FC<indexProps> = () => {
                 <button onClick={handleUpdateScore} className='border border-solid'>update scores</button>
                 <button onClick={addNewField} className='border border-solid'>Add new Field</button>
                 <button onClick={handleUpdateQuestionDisplay} className='border border-solid'>Question display test</button>
+                <input type='file' accept='.csv' id='csvSelector' onChange={addQuestionHandler} />
+                <button className='border border-solid'>Add new questions</button>
             </div>
         </div>}
 
