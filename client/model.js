@@ -161,7 +161,8 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
             scoresObject=updateScores(scoresObject,feedbackScore,testcaseScore,topicList,difficultyLevel);
             let recommendQuestions=getRecommendQuestions(scoresObject);
             userScoresAll=convertToScoresArray(scoresObject);
-            questionStatus=updateQuestionsStatus(questionData.difficulty,questionStatus);
+            // questionStatus=updateQuestionsStatus(questionData.difficulty,questionStatus);
+            questionStatus=changeQuestionsStatus(questionData.difficulty,questionStatus);
             await updateUserScore(userId,userScoresAll);
             await updateQuestionStatus(userId,questionStatus);
             if(isFullPass){
