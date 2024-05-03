@@ -93,7 +93,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata,ge
                         {/* Examples */}
                         <div className="mt-4">
                             {/* Example 1 */}
-                            <div>
+                            {/* <div>
                                 <p className="font-medium text-white ">
                                     Example 1:{" "}
                                 </p>
@@ -120,7 +120,8 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ questiondata,ge
                                         <strong>Explanation:</strong> V = 5, I = 1. So, 4 is 5 - 1 = 4.
                                     </pre>
                                 </div>
-                            </div>
+                            </div> */}
+                            {parse(questiondata?.examples as string)}
                         </div>
 
                         {/* Constraints */}

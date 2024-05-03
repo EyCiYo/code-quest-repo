@@ -41,6 +41,7 @@ const Playground: React.FC<PlaygroundProps> = ({
 }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
   const displayTestCases = questiondata?.testcases.slice(0, 2);
+  
   const [boilerPlate, setBoilerPlate] = useState<string>(
     atob(questiondata?.boilerplate_py as string)
   );
@@ -517,12 +518,12 @@ const Playground: React.FC<PlaygroundProps> = ({
                 ].input
               }
             </div>
-            <p className="text-sm font-medium mt-4 text-white">Output:</p>
+            <p className="text-sm font-medium mt-4 text-white">Expected Output:</p>
             <div className="w-full cursor-text rounded-lg border px-3 py-[10px] bg-dark-fill-3 border-transparent text-white mt-2">
               {
                 questiondata?.testcases[
                   failedTestCaseIdx !== -1 ? failedTestCaseIdx : testCaseIdx
-                ].input
+                ].output
               }
             </div>
           </div>
