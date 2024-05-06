@@ -110,9 +110,10 @@ export async function setInitialScore(questionData,userId,testcases){
         if(userInfo){
             // let solvedQuestions=userInfo.question_solved;
             let userScoresAll=userInfo.scores;
+            console.log(userScoresAll);
             let initialProblemCount=userInfo.initial_problem_count; 
             let questionStatus = userInfo.question_stats;
-            // console.log("old status is ",questionStatus);
+            console.log("old status is ",questionStatus);
             console.log('User data fetched at model.js:',userInfo);
             let scoresObject=convertToScoresObject(userScoresAll);
             let difficultyLevel=questionData.difficulty.toLowerCase();
@@ -151,7 +152,7 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
     try{
         let userInfo= await getUserData(userId);
         if(userInfo){
-            let solvedQuestions=userInfo.question_solved;
+            // let solvedQuestions=userInfo.question_solved;
             let userScoresAll=userInfo.scores;
             let questionStatus = userInfo.question_stats;
             console.log('User data fetched at model.js:',userInfo);
@@ -159,15 +160,14 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
             let difficultyLevel=questionData.difficulty.toLowerCase();
             let topicList=questionData.topics.toLowerCase().split(",");
             scoresObject=updateScores(scoresObject,feedbackScore,testcaseScore,topicList,difficultyLevel);
-            let recommendQuestions=getRecommendQuestions(scoresObject);
+            // let recommendQuestions=getRecommendQuestions(scoresObject);
             userScoresAll=convertToScoresArray(scoresObject);
             // questionStatus=updateQuestionsStatus(questionData.difficulty,questionStatus);
             questionStatus=changeQuestionsStatus(questionData.difficulty,questionStatus);
             await updateUserScore(userId,userScoresAll);
             await updateQuestionStatus(userId,questionStatus);
-            if(isFullPass){
-                await updateQuestionsSolved(userId,questionData.id); 
-            }
+            // console.log()
+            await updateQuestionsSolved(userId,questionData.id); 
         }else{
             console.log("could not get user data at model.js");
         }
@@ -187,16 +187,17 @@ function intialScores(scoresArray,topicList,testcases,difficultyLevel){
 }
 
 function getScoreRate(prevScore) {
+    prevScore=isNaN(prevScore)?0:prevScore;
     const k=0.7;  // k increases, change decreases
     const checkpoint=80; // after 50, points gained decreases significantly
-    const attemptLimit=7; // after which insignificant change in score
+    // const attemptLimit=7; // after which insignificant change in score
     // const attemptRate = attemptLimit/attempts; if you want this, return = return * attemptRate
     return  (1 / (1 + Math.exp(k * (prevScore - checkpoint))));
 }
 
 function updateScores(scoresArray,feedbackScore,testcaseScore,topicList,difficultyLevel) {
     topicList.forEach((topic)=>{
-        const avgScore = (feedbackScore+testcaseScore)/2;
+        const avgScore = ((isNaN(feedbackScore) ? 0 : feedbackScore) + (isNaN(testcaseScore) ? 0 : testcaseScore)) / 2;
         const topicScoreIncrease = avgScore * topicWeight[topic] * difficultyWeight[difficultyLevel]; 
       	const scoreRate = getScoreRate(scoresArray[topic]);
         scoresArray[topic] = Math.round(scoresArray[topic]+ topicScoreIncrease * scoreRate );
@@ -230,10 +231,11 @@ export function getTestCaseScore(array,totalTestCases){
  * @returns {topicArray} 
  */
 export function getRecommendQuestions(scoresArray){
+    console.log("inside getRecommendQuestions");
     let normalizedScores=[];
     let inverseSum=0;
     const values = Object.values(scoresArray);
-    const keys = Object.keys(scoresArray);
+    // const keys = Object.keys(scoresArray);
     console.log(values);
     for(let i=0;i<values.length;i++){
         if(values[i]!=0){
@@ -260,10 +262,11 @@ export function getRecommendQuestions(scoresArray){
  * @returns {topicArray} 
  */
 export function getRecommendVideos(scoresArray){
+    console.log("inside getRecommendVideos");
     let normalizedScores=[];
     let inverseSum=0;
     const values = Object.values(scoresArray);
-    const keys = Object.keys(scoresArray);
+    // const keys = Object.keys(scoresArray);
     console.log(values);
     for(let i=0;i<values.length;i++){
         if(values[i]!=0){
