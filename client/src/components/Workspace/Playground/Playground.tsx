@@ -181,7 +181,7 @@ const Playground: React.FC<PlaygroundProps> = ({
           toast.info(result[i].description, {
             theme: "dark",
             position: "top-center",
-            autoClose: 3000,
+            autoClose: 2000,
           });
         }
       }
@@ -198,7 +198,11 @@ const Playground: React.FC<PlaygroundProps> = ({
         userIdFromProblem
       ));
       if (!isnotsolved) {
-        console.log("question already solved.");
+        toast.warn("Question already solved!!", {
+          theme: "dark",
+          position: "top-center",
+          autoClose: 2000,
+        });
         return;
       }
     }
@@ -218,7 +222,7 @@ const Playground: React.FC<PlaygroundProps> = ({
         const result = await response.json();
         for (var i = 0; i < result.length; i++) {
           if (result[i].name === reqLang) {
-            console.log(result[i].id);
+            //console.log(result[i].id);
             return result[i].id as Number;
           }
         }
@@ -246,7 +250,7 @@ const Playground: React.FC<PlaygroundProps> = ({
         selectedLanguage === "python"
           ? sourceCode + driver
           : header + sourceCode + driver;
-      console.log(code);
+      //console.log(code);
       const encodedCode = btoa(code);
 
       const data = {
@@ -270,7 +274,7 @@ const Playground: React.FC<PlaygroundProps> = ({
       const responseData = await response.json();
 
       const submissionToken = responseData.token;
-      console.log(submissionToken);
+      //console.log(submissionToken);
 
       const statusURL =
         "https://judge0-ce.p.rapidapi.com/submissions/" +
@@ -296,7 +300,7 @@ const Playground: React.FC<PlaygroundProps> = ({
         throw new Error("Error in code");
       }
       const result = atob(statusData.stdout);
-      console.log("statusData is ", statusData);
+      //console.log("statusData is ", statusData);
       const resultArray = result.split("-");
       const passArray = resultArray.filter(
         (testCase) => testCase === "1" || testCase === "0"
@@ -338,7 +342,6 @@ const Playground: React.FC<PlaygroundProps> = ({
   };
 
   const handleSubmit = async (questiondata: DBProblem | null) => {
-    console.log("New Submit Logic");
     if (questiondata === null) {
       return;
     }
@@ -347,13 +350,17 @@ const Playground: React.FC<PlaygroundProps> = ({
       userIdFromProblem
     ));
     if (!showFeedback) {
-      console.log("question already solved.");
+      toast.warn("Question already solved!!", {
+        theme: "dark",
+        position: "top-center",
+        autoClose: 2000,
+      });
       return;
     }
     sendDataToWS(sourceCode);
     toggleFeedback();
     const testCaseScore = getTestCaseScore(testCaseArray, totalTestCases);
-    console.log(`testCaseScore is ${testCaseScore}`);
+    //console.log(`testCaseScore is ${testCaseScore}`);
     testScore(testCaseScore);
     isFullPass(passAllCases);
   };

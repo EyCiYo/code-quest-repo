@@ -45,10 +45,11 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
       if (user) {
         try {
           const data = await getUserData(user.uid);
-          setUserData(data);
           if (data?.question_solved.length == 4) {
             const userscores = convertToScoresObject(data?.scores);
+            console.log("User score in table page:", userscores);
             const recomendedquestions = getRecommendQuestions(userscores);
+            console.log("Recomended questions in table page:", recomendedquestions);
             updateQuestionsDisplay(user.uid, recomendedquestions);
           }
         } catch (error) {
@@ -85,6 +86,7 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
     fetchData();
   }, [userData]);
 
+  
   return (
     <>
       {isLoading && <PageLoading />}

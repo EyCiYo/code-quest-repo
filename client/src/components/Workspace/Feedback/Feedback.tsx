@@ -78,6 +78,7 @@ const Feedback: React.FC<FeedbackProps> = ({
           }
           if (isFullPass) {
             const feedbackScore = getScore(text);
+            console.log("yes i is being called in feedback");
             setScoreOnSubmit(
               questiondata,
               userId,

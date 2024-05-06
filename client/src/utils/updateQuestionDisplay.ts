@@ -1,6 +1,6 @@
 import { DBProblem, topicArray, UserStruct } from './types';
 import { firestore } from '@/firebase/firebase';
-import { getDoc,getDocs, collection, updateDoc,doc } from 'firebase/firestore';
+import { getDoc,getDocs, collection, updateDoc,doc,arrayUnion } from 'firebase/firestore';
 
 function capitalizeFirstLetter(name:string) {
     return name.charAt(0).toUpperCase() + name.slice(1);
@@ -11,7 +11,6 @@ export async function updateQuestionsDisplay(uid: string, topic_array:topicArray
     const maxLength = 10;
     try 
     {
-        
         console.log('Inside updateQuestionsDisplay',topic_array);
         const userRef = doc(db, "users", uid);
         const userDoc = await getDoc(userRef);
@@ -21,15 +20,17 @@ export async function updateQuestionsDisplay(uid: string, topic_array:topicArray
             questionData.push(doc.data() as DBProblem);
         });
 
-        console.log('Question data:', questionData);
+        //console.log('Question data:', questionData);
     
         if (userDoc.exists()) 
         {
             const userData = userDoc.data() as UserStruct;
-            console.log('User data:', userData);
-            let new_quesions = userData.questions_to_display;
+            //console.log('User data:', userData);
+            let new_quesions:string[] = [];
             let done_questions = userData.question_solved;
             for (const topic in topic_array){
+                if(new_quesions.length >= maxLength)
+                    break;
                 for(let i = 0; i < topic_array[topic]; i++){
                     console.log('Topic:',topic);
                     questionData.forEach((ques) => {
@@ -46,8 +47,9 @@ export async function updateQuestionsDisplay(uid: string, topic_array:topicArray
             }
             try{
                 await updateDoc(userRef, {
-                    questions_to_display: new_quesions,
+                    questions_to_display: arrayUnion(new_quesions),
                 });
+                console.log('Questions to display updated successfully',userData.questions_to_display);
             }
             catch (error) {
                 console.error('Error updating questions to display:', error);
