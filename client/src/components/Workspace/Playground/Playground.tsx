@@ -329,7 +329,7 @@ const Playground: React.FC<PlaygroundProps> = ({
       setTestCaseArray([...testCaseArray, testcases]);
       // console.log(`compilationStatus is ${compilationStatus}`);
       showTestcaseScore && beginnerValue && compilationStatus
-        ? setInitialScore(questiondata, userIdFromProblem, testcases)
+        ? setInitialScore(questiondata, userIdFromProblem, testcases,totalTestCases)
         : console.log("not calling setInitialScore");
       alert(strRes);
     } catch (error) {
