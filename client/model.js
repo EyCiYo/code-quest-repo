@@ -102,23 +102,23 @@ function convertToScoresArray(scoresObject) {
         return keyValueArray;
 }
 
-export async function setInitialScore(questionData,userId,testcases){
+export async function setInitialScore(questionData,userId,testcases,totalTestCases){
     console.log("inside setInitialScore");
     try{
         console.log("no. of testcases passed are",testcases);
         let userInfo= await getUserData(userId);
         if(userInfo){
             // let solvedQuestions=userInfo.question_solved;
+            console.log('User data fetched at model.js:',userInfo);
             let userScoresAll=userInfo.scores;
             console.log(userScoresAll);
             let initialProblemCount=userInfo.initial_problem_count; 
-            let questionStatus = userInfo.question_stats;
+            let questionStatus = userInfo.question_stats; // easy, medium and hard
             console.log("old status is ",questionStatus);
-            console.log('User data fetched at model.js:',userInfo);
             let scoresObject=convertToScoresObject(userScoresAll);
             let difficultyLevel=questionData.difficulty.toLowerCase();
             let topicList=questionData.topics.toLowerCase().split(",");
-            scoresObject=intialScores(scoresObject,topicList,testcases,difficultyLevel);
+            scoresObject=findIntialScores(scoresObject,topicList,testcases,totalTestCases,difficultyLevel);
             userScoresAll=convertToScoresArray(scoresObject) 
             questionStatus=changeQuestionsStatus(questionData.difficulty,questionStatus);
             console.log("new status is ",questionStatus);
@@ -140,6 +140,16 @@ export async function setInitialScore(questionData,userId,testcases){
     }catch (error) {
         console.error('Error setting score:', error);
     }
+}
+
+// initialScores using no. of testcases passed 
+function findIntialScores(scoresArray,topicList,testcases,totalTestCases,difficultyLevel){
+    // const totalTestCases=10;
+    // console.log("topicList is ",topicList);
+    topicList.forEach((topic)=>{
+        scoresArray[topic]=Math.ceil(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases)*10);
+    });
+    return scoresArray;
 }
 
 function changeQuestionsStatus(difficultyLevel,questionStatus){
@@ -174,16 +184,6 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
     }catch (error) {
         console.error('Error setting score:', error);
     }
-}
-
-// initialScores using no. of testcases passed 
-function intialScores(scoresArray,topicList,testcases,difficultyLevel){
-    const totalTestCases=10;
-    // console.log("topicList is ",topicList);
-    topicList.forEach((topic)=>{
-        scoresArray[topic]=Math.ceil(scoresArray[topic]+difficultyWeight[difficultyLevel]*topicWeight[topic]*(testcases/totalTestCases)*10)
-    });
-    return scoresArray;
 }
 
 function getScoreRate(prevScore) {
