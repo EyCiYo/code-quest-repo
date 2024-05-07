@@ -17,6 +17,7 @@ import { getUserData } from "@/utils/userDataFetch";
 import { toast } from "react-toastify";
 import axios, { AxiosResponse } from "axios";
 import { Writable } from "stream";
+import { updateQuestionsSolved } from "@/utils/updateQuestionsSolved";
 
 // interface Props {
 //   sendDataToWS: (data: string) => void;
@@ -28,7 +29,6 @@ type PlaygroundProps = {
   userIdFromProblem: string;
   toggleFeedback: () => void;
   testScore: (data: number) => void;
-  isFullPass: (data: boolean) => void;
 };
 
 const Playground: React.FC<PlaygroundProps> = ({
@@ -37,7 +37,6 @@ const Playground: React.FC<PlaygroundProps> = ({
   userIdFromProblem,
   toggleFeedback,
   testScore,
-  isFullPass,
 }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("python");
   const displayTestCases = questiondata?.testcases.slice(0, 2);
@@ -54,8 +53,10 @@ const Playground: React.FC<PlaygroundProps> = ({
   const [testCaseIdx, setTestCaseIdx] = useState<number>(0);
   const [failedTestCaseIdx, setFailedTestCaseIdx] = useState<number>(-1);
   const [testCaseArray, setTestCaseArray] = useState<number[]>([]);
-  const [totalTestCases, setTotalTestCases] = useState<number>(0);
-  const [passAllCases, setPassAllCases] = useState<boolean>(false);
+  //const [totalTestCases, setTotalTestCases] = useState<number>(0);
+  let totalTestCases = questiondata?.testcases.length || 0;
+  //const [passAllCases, setPassAllCases] = useState<boolean>(false);
+  let passAllCases = false
   const codemirrorExtensions = [
     EditorView.lineWrapping,
     selectedLanguage === "python" ? python() : cpp(),
@@ -63,19 +64,7 @@ const Playground: React.FC<PlaygroundProps> = ({
   // const [attempts,setAttempts] = useState(0);
   // let totalNumberOfTestcases=0;
 
-  const header = `
-	#include <iostream>
-	#include <vector>
-	#include <string>
-	#include <algorithm>
-	#include <cmath>
-	#include <unordered_map>
-	#include <unordered_set>
-	#include <queue>
-	#include <stack>
-	#include <utility>
-	using namespace std;
-	`;
+  const header = questiondata?.header_cpp as string;
 
   // const auth = getAuth(app);
   const getScore = (feedback: string) => {
@@ -193,6 +182,8 @@ const Playground: React.FC<PlaygroundProps> = ({
 
   const handleRunButtonClick = async (questiondata: DBProblem | null) => {
     if (questiondata) {
+      console.log("inside run button",questiondata.testcases.length);
+      //setTotalTestCases(questiondata.testcases.length);
       const isnotsolved = !(await isQuestionSolved(
         questiondata.id,
         userIdFromProblem
@@ -299,15 +290,17 @@ const Playground: React.FC<PlaygroundProps> = ({
         });
         throw new Error("Error in code");
       }
-      const result = atob(statusData.stdout);
+      const result = atob(statusData.stdout).trim();
       //console.log("statusData is ", statusData);
       const resultArray = result.split("-");
+      console.log("stdout: ",result,"ResultArray: ",resultArray)
       const passArray = resultArray.filter(
         (testCase) => testCase === "1" || testCase === "0"
       );
       console.log("testcase array is ", passArray);
       // totalNumberOfTestcases=passArray.length;
-      setTotalTestCases(passArray.length);
+      //setTotalTestCases(passArray.length);
+      console.log("totalNumberOfTestcases is ", totalTestCases);
       var strRes: string = "";
       let testcases = 0;
       let failedIdx = -1;
@@ -326,9 +319,11 @@ const Playground: React.FC<PlaygroundProps> = ({
       });
       setFailedTestCaseIdx(failedIdx);
       setTestcases(testcases);
-      if (testcases == totalTestCases) {
-        setPassAllCases(true);
+      console.log("test cases passed: "+testcases+" totalNumberOfTestcases:"+totalTestCases);
+      if (testcases === totalTestCases) {
+        passAllCases = true;
       }
+      console.log("Did all test case pass inside run button fn: ",passAllCases);
       console.log("adding the testcase to testcase array");
       setTestCaseArray([...testCaseArray, testcases]);
       // console.log(`compilationStatus is ${compilationStatus}`);
@@ -362,80 +357,11 @@ const Playground: React.FC<PlaygroundProps> = ({
     const testCaseScore = getTestCaseScore(testCaseArray, totalTestCases);
     //console.log(`testCaseScore is ${testCaseScore}`);
     testScore(testCaseScore);
-    isFullPass(passAllCases);
+    if(testcases === totalTestCases){
+      console.log("All test cases passed in handle submit");
+      await updateQuestionsSolved(userIdFromProblem, questiondata.id);
+    }
   };
-
-  // const handleSubmitButtonClick = async (questiondata:DBProblem|null) => {
-  // 	console.log("Submit button clicked");
-  // 	if(questiondata==null){
-  // 		return;
-  // 	}
-  // 	const showFeedback = !(await isQuestionSolved(questiondata.id,userIdFromProblem));
-  // 	if(!showFeedback){
-  // 		console.log("question already solved.");
-  // 		return;
-  // 	}
-  //   const testCaseScore = getTestCaseScore(testCaseArray,totalTestCases);
-  //   console.log(`testCaseScore is ${testCaseScore}`);
-
-  // 	// const options: RequestOptions = {
-  // 	// method: "POST",
-  // 	// hostname: "api.deepseek.com",
-  // 	// path: "/v1/chat/completions",
-  // 	// headers: {
-  // 	// 	"Content-Type": "application/json",
-  // 	// 	Accept: "application/json",
-  // 	// 	Authorization:
-  // 	// 	"Bearer " + String(process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY),
-  // 	// },
-  // 	// };
-  // 	// const req = https.request(options, (res) => {
-  // 	// let chunks: Buffer[] = [];
-
-  // 	// res.on("data", (chunk: Buffer) => {
-  // 	// 	chunks.push(chunk);
-  // 	// });
-
-  // 	// res.on("end", () => {
-
-  // 	// 	let body = Buffer.concat(chunks);
-  // 	// 	let content = JSON.parse(body.toString());
-  // 	// 	//console.log(body);
-  // 	// 	// console.log(content)
-  // 	// 	let feedbackResponse = content.choices[0].message.content;
-  // 	// 	sendDataToWS(feedbackResponse);
-  // showFeedback ? setScoreOnSubmit(questiondata,userIdFromProblem,getScore(feedbackResponse)): console.log("question already solved");
-  // 	// });
-
-  // 	// res.on("error", (error) => {
-  // 	// 	console.error(error);
-  // 	// });
-  // 	// });
-
-  //   };
-
-  let postData = JSON.stringify({
-    messages: [
-      {
-        content:
-          "Evaluate this code and provide tips to improve the code considering this is a competitve coding environment where comments, try-catch and good variable names are not important. No need to provide a better code, just providing the tips would be enough. Provide the feedback in a professional manner without referencing yourself as I.Evaluate this code and at the end of your feedback in the next line give a score out of 10 in the format 'Score is 6/10' and there should not be anything after the score.",
-        role: "system",
-      },
-      {
-        content: sourceCode,
-
-        role: "user",
-      },
-    ],
-    model: "deepseek-chat",
-    frequency_penalty: 0,
-    max_tokens: 2048,
-    presence_penalty: 0,
-    stop: null,
-    stream: false,
-    temperature: 0.2,
-    top_p: 1,
-  });
 
   return (
     <div className="flex flex-col relative bg-dark-layer-1 overflow-x-hidden">

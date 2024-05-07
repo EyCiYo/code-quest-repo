@@ -1,5 +1,6 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import Topbar from "@/components/Topbar/Topbar";
 import { auth } from "@/firebase/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -22,11 +23,28 @@ const stripNumber = (title: string) => {
 };
 
 const ProblemTable: React.FC<ProblemTableProps> = () => {
+  const router = useRouter();
   const [user] = useAuthState(auth);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<UserStruct | null>(null);
   const [problems, setProblems] = useState<DBProblem[]>([]);
   const [headingText, setHeadingText] = useState<string>("");
+
+  // Reload page on back button press is acheived with this useEffect
+  useEffect(() => {
+    setIsLoading(true);
+    const handleBackButton = (event:any) => {
+      if (event.state && event.state.page === 'problemtable') {
+        window.location.reload();
+      }
+    };
+    window.onpopstate = handleBackButton;
+    return () => {
+      window.onpopstate = null;
+    };
+    setIsLoading(false);
+  }, []);
+
 
   useEffect(() => {
     if (!user) {
@@ -45,11 +63,11 @@ const ProblemTable: React.FC<ProblemTableProps> = () => {
       if (user) {
         try {
           const data = await getUserData(user.uid);
-          if (data?.question_solved.length == 4) {
+          if(!data)
+            return
+          if (data?.question_solved.length >= 4) {
             const userscores = convertToScoresObject(data?.scores);
-            console.log("User score in table page:", userscores);
             const recomendedquestions = getRecommendQuestions(userscores);
-            console.log("Recomended questions in table page:", recomendedquestions);
             updateQuestionsDisplay(user.uid, recomendedquestions);
           }
         } catch (error) {

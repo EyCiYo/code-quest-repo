@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             presence_penalty: 0,
             stop: null,
             stream: true,
-            temperature: 0.2,
+            temperature: 0.1,
             top_p: 1,
         })
     
