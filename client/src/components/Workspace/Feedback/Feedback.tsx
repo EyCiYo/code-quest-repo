@@ -5,14 +5,12 @@ import remarkGfm from "remark-gfm";
 import { convertToScoresObject, setScoreOnSubmit } from "../../../../model";
 import { updateQuestionsDisplay } from "@/utils/updateQuestionDisplay";
 import { getRecommendQuestions } from "../../../../model";
-import { get } from "http";
 import { getUserData } from "@/utils/userDataFetch";
 
 type FeedbackProps = {
   dataFromPG: string;
   questiondata: DBProblem | null;
   testScore: number;
-  isFullPass: boolean;
   userId: string;
 };
 
@@ -20,7 +18,6 @@ const Feedback: React.FC<FeedbackProps> = ({
   dataFromPG,
   questiondata,
   testScore,
-  isFullPass,
   userId,
 }) => {
   const getScore = (feedback: string) => {
@@ -46,11 +43,13 @@ const Feedback: React.FC<FeedbackProps> = ({
   //console.log('Source code:', sourceCode);
   const [lines, setLines] = useState("");
   const isMounted = useRef(false);
-  useEffect(() => {
+  useEffect( () => {
     if (isMounted.current) {
       if (sourceCode === "") return;
       const fetchData = async () => {
         setLines("");
+        if(!questiondata) return;
+        let userInfo = await getUserData(userId);
         try {
           const res = await fetch("/api/submit", {
             method: "POST",
@@ -76,22 +75,22 @@ const Feedback: React.FC<FeedbackProps> = ({
               break;
             }
           }
-          if (isFullPass) {
+          if (userInfo?.question_solved.includes(questiondata?.id)) {
             const feedbackScore = getScore(text);
+            console.log("yes i is being called in feedback");
             setScoreOnSubmit(
               questiondata,
               userId,
               feedbackScore,
-              testScore,
-              isFullPass
+              testScore
             );
-            let userInfo = await getUserData(userId);
-            if (userInfo) {
-              const userscores = convertToScoresObject(userInfo.scores);
-              const recomendedquestions = getRecommendQuestions(userscores);
-              console.log("Recommended Questions:", recomendedquestions);
-              updateQuestionsDisplay(userId, recomendedquestions);
-            }
+            
+            // if (userInfo) {
+            //   const userscores = convertToScoresObject(userInfo.scores);
+            //   const recomendedquestions = getRecommendQuestions(userscores);
+            //   // console.log("Recommended Questions:", recomendedquestions);
+            //   // updateQuestionsDisplay(userId, recomendedquestions);
+            // }
 
             // just a comment
           }

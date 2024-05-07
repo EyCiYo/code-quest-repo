@@ -9,7 +9,7 @@ export async function updateQuestionsSolved(uid: string, question_id: string) {
         await updateDoc(userRef, {
             question_solved: arrayUnion(question_id)
         });
-        console.log("Question added to database successfully");
+        console.log("Question solved updated to database successfully");
     } catch (error) {
         console.error("Error adding question to database:", error);
     }

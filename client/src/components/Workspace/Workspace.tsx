@@ -60,9 +60,10 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
     setTestscore(data);
   }
 
-  const handleFullPass = (data:boolean)=>{
-    setFullTestPass(data);
-  }
+  // const handleFullPass = (data:boolean)=>{
+  //   console.log('workspace Full pass:',data);
+  //   setFullTestPass(data);
+  // }
 
   return (
     <Split className="split" sizes={[50, 50]}>
@@ -86,10 +87,10 @@ const Workspace: React.FC<WorkspaceProps> = ({ questiondata }) => {
           </div>}
         </div>
         {showDescription && <ProblemDescription questiondata={questiondata} getUserId={handleUserId}/>}
-        {showFeedback &&  <Feedback dataFromPG={dataFromPG} questiondata={questiondata} testScore={testScore} isFullPass={fullTestPass} userId = {userId}/>}
+        {showFeedback &&  <Feedback dataFromPG={dataFromPG} questiondata={questiondata} testScore={testScore} userId = {userId}/>}
       </div>
 
-      <Playground questiondata={questiondata} sendDataToWS={handleDataFromPG} userIdFromProblem={userId} toggleFeedback={feedback} testScore={handleTestScore} isFullPass={handleFullPass}/>
+      <Playground questiondata={questiondata} sendDataToWS={handleDataFromPG} userIdFromProblem={userId} toggleFeedback={feedback} testScore={handleTestScore}/>
     </Split>
   );
   

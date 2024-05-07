@@ -157,7 +157,7 @@ function changeQuestionsStatus(difficultyLevel,questionStatus){
     return questionStatus;
 }
 
-export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcaseScore,isFullPass) {
+export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcaseScore) {
     console.log("inside setScoreOnSubmit");
     try{
         let userInfo= await getUserData(userId);
@@ -177,7 +177,7 @@ export async function setScoreOnSubmit(questionData,userId,feedbackScore,testcas
             await updateUserScore(userId,userScoresAll);
             await updateQuestionStatus(userId,questionStatus);
             // console.log()
-            await updateQuestionsSolved(userId,questionData.id); 
+            //await updateQuestionsSolved(userId,questionData.id); 
         }else{
             console.log("could not get user data at model.js");
         }
